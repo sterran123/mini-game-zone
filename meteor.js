@@ -201,8 +201,8 @@ function update(dt) {
 // ----- 보스 -----
 function spawnBoss(lv) {
   const tier = lv / 5;
-  state.boss = { tier, hp: 14 + tier * 10, maxHp: 14 + tier * 10,
-                 x: W / 2, y: -70, t: 0, aimT: 1400, fanT: 2200, ringT: 3000 };
+  state.boss = { tier, hp: 18 + tier * 10, maxHp: 18 + tier * 10,
+                 x: W / 2, y: -70, t: 0, aimT: 1400, fanT: 2200, ringT: 3000, eva: 0 };
   state.shotT = 400;
   flash('⚠ WARNING ⚠'); sfx.alarm();
   setStatus(`보스 출현! 탄막을 피하면서 총알을 맞히세요`);
@@ -212,11 +212,22 @@ function updateBoss(dt) {
   b.t += dt;
   // 등장 후 좌우 사인 이동 + 상하 살랑
   b.y += (90 + Math.sin(b.t * .7) * 16 - b.y) * Math.min(1, dt * 2.2);
-  b.x = W / 2 + Math.sin(b.t * (.5 + b.tier * .14)) * (140 + b.tier * 10);
+  // 회피 AI: 올라오는 총알이 가까우면 반대쪽으로 도망
+  let threat = false;
+  for (const s of state.shots) {
+    if (!s.got && s.y > b.y && s.y - b.y < 260 && Math.abs(s.x - b.x) < 64) {
+      threat = true;
+      b.eva += (b.x < state.px ? -1 : 1) * (200 + b.tier * 40) * dt;
+    }
+  }
+  if (!threat) b.eva *= 1 - Math.min(1, dt * 1.6);   // 위협 없으면 중앙으로 복귀
+  b.eva = Math.max(-140, Math.min(140, b.eva));
+  const bx = W / 2 + Math.sin(b.t * (.5 + b.tier * .14)) * (140 + b.tier * 10) + b.eva;
+  b.x = Math.max(48, Math.min(W - 48, bx));
   // 플레이어 자동 사격
   state.shotT -= dt * 1000;
   if (state.shotT <= 0 && b.y > 0) {
-    state.shotT = 230;
+    state.shotT = 280;
     state.shots.push({ x: state.px, y: PY - PSIZE / 2 - 4, vy: -560 });
     sfx.shoot();
   }
@@ -236,7 +247,7 @@ function updateBoss(dt) {
   // 내 총알 → 보스 명중
   for (const s of state.shots) {
     s.y += s.vy * dt;
-    if (!s.got && Math.abs(s.x - b.x) < 40 && Math.abs(s.y - b.y) < 28) {
+    if (!s.got && Math.abs(s.x - b.x) < 34 && Math.abs(s.y - b.y) < 24) {
       s.got = true; b.hp--; sfx.bossHit();
       state.parts.push({ x: s.x, y: s.y, vx: rand(-80, 80), vy: rand(-100, -20), life: .3, c: '#5CE0B3' });
     }
