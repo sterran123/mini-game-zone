@@ -122,7 +122,8 @@ function genMap() {
 }
 
 // ----- 렌더 -----
-const GLYPH = { player: '🐱', key: '🔑', stairs: '🚪', slime: '🟢', trap: '🔥' };
+const GLYPH = { player: 'cat', key: 'key', stairs: 'stairs', slime: 'slime', trap: 'trap' };
+const SPR = 'assets/sprites/';
 let cellEls = [];
 function buildBoard() {
   board.innerHTML = '';
@@ -136,23 +137,26 @@ function buildBoard() {
 }
 function render() {
   const { map, px, py, hasKey } = state;
+  const S = CONFIG.size;
   for (let i = 0; i < cellEls.length; i++) {
     const el = cellEls[i];
     const t = map[i];
-    el.className = 'cell ' + (t === WALL ? 'wall' : 'floor');
-    let g = '';
-    if (t === WALL) g = '🧱';
-    else if (t === TRAP) g = GLYPH.trap;
-    if (state.key === i && !hasKey) g = GLYPH.key;
-    if (state.stairs === i) g = GLYPH.stairs;
-    if (state.slimes.includes(i)) g = GLYPH.slime;
-    if (i === key(px, py)) g = GLYPH.player;
-    el.textContent = g;
+    const isPlayer = i === key(px, py);
+    el.className = 'cell ' + (t === WALL ? 'wall' : 'floor' + (((i % S) + (i / S | 0)) % 2 ? ' alt' : ''));
+    let g = null;
+    if (t === WALL) { /* 석재 블록은 CSS로 */ }
+    else if (t === TRAP) { g = GLYPH.trap; el.classList.add('hazard'); }
+    if (state.key === i && !hasKey) { g = GLYPH.key; el.classList.add('haskey'); }
+    if (state.stairs === i) { g = GLYPH.stairs; el.classList.add('stairs'); if (hasKey) el.classList.add('open'); }
+    if (state.slimes.includes(i)) { g = GLYPH.slime; el.classList.add('slime'); }
+    if (isPlayer) { g = GLYPH.player; el.classList.add('player'); }
+    el.innerHTML = g ? `<img class="spr" src="${SPR}${g}.svg" alt="">` : '';
   }
   keyState.textContent = hasKey ? '🔑 있음!' : '없음';
   moveCount.textContent = state.moves;
 }
 function setStatus(msg) { statusLine.textContent = msg; }
+let lastSecond = -1;
 function hud() {
   const r = Math.max(0, state.remaining) / CONFIG.timeMs;
   timerFill.style.width = (r * 100) + '%';
@@ -160,6 +164,12 @@ function hud() {
   timerNum.textContent = (Math.max(0, state.remaining) / 1000).toFixed(1);
   scoreLine.textContent = `${stats.wins}승 ${stats.losses}패`;
   bestLine.textContent = stats.bestMs ? (stats.bestMs / 1000).toFixed(1) + '초' : '—';
+  const danger = state.phase === 'playing' && state.remaining < 10000;
+  document.querySelector('.board-area').classList.toggle('danger', danger);
+  // 마지막 5초 틱 소리
+  const sec = Math.ceil(Math.max(0, state.remaining) / 1000);
+  if (danger && sec <= 5 && sec !== lastSecond) { lastSecond = sec; beep(880, .05, 'square', .05); }
+  if (!danger) lastSecond = -1;
 }
 
 // ----- 판 흐름 -----
@@ -194,8 +204,9 @@ function endGame(win, cause) {
   else stats.losses++;
   saveStats(); renderLog(); hud();
   board.classList.remove('shake', 'flash-win');
-  if (win) { sfx.win(); if (!reduceMotion()) board.classList.add('flash-win'); }
+  if (win) { sfx.win(); if (!reduceMotion()) { board.classList.add('flash-win'); confetti(); } }
   else { sfx.lose(); if (!reduceMotion()) board.classList.add('shake'); }
+  document.querySelector('.overlay-mascot').textContent = win ? '😸' : '💀';
   overlayTitle.textContent = win ? '탈출 성공!' : '던전에서 쓰러졌다…';
   overlayMsg.innerHTML = win
     ? `⏱ ${(elapsed / 1000).toFixed(1)}초 만에 탈출! 이동 ${state.moves}번.<br>Enter 또는 버튼으로 다음 던전.`
@@ -258,6 +269,7 @@ function pauseGame() {
   state.phase = 'paused';
   state.remaining = state.deadline - performance.now();
   clearInterval(state.tickTimer); bgmStop();
+  document.querySelector('.overlay-mascot').textContent = '⏸️';
   overlayTitle.textContent = '일시정지';
   overlayMsg.innerHTML = 'P 또는 버튼으로 재개 — 타이머는 멈춰 있습니다.';
   startBtn.textContent = '재개 (P)';
@@ -272,6 +284,22 @@ function resumeGame() {
   overlay.hidden = true;
   bgmStart();
   setStatus('재개! 계속 이동하세요.');
+}
+
+// 승리 색종이 파티클
+function confetti() {
+  const area = document.querySelector('.board-area');
+  const bits = ['🎉', '✨', '⭐', '🎊', '🔶'];
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = bits[i % bits.length];
+    s.style.left = (Math.random() * 90 + 5) + '%';
+    s.style.animationDelay = (Math.random() * .35) + 's';
+    s.style.fontSize = (1 + Math.random() * .8) + 'rem';
+    area.appendChild(s);
+    setTimeout(() => s.remove(), 2200);
+  }
 }
 
 // ----- 입력 -----

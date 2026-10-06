@@ -2,13 +2,13 @@
 
 ## 제출 값
 
-- 결과물 URL: https://sterran123.github.io/30s-dungeon/
-- 소스 URL (최종 커밋으로 교체): https://github.com/sterran123/30s-dungeon/commit/최종커밋해시
+- 결과물 URL: https://sterran123.github.io/mini-game-zone/ (존에서 "30초 던전" 카드 → 게임)
+- 소스 URL (최종 커밋으로 교체): https://github.com/sterran123/mini-game-zone/commit/최종커밋해시
 
 ## 짧은 확인 방법 4줄
 
-1. 어디로 가나요: https://sterran123.github.io/30s-dungeon/ — 새 시크릿 창에서 열기
-2. 무엇을 하나요(3단계 이내): 1) "시작하기" 클릭 또는 Enter 2) 방향키로 🐱를 움직여 🔑 열쇠를 먹고 🚪 계단으로 이동 3) 끝나면 Enter로 다시 시작
+1. 어디로 가나요: https://sterran123.github.io/mini-game-zone/ — 새 시크릿 창에서 열기
+2. 무엇을 하나요(3단계 이내): 1) "30초 던전" 카드 클릭 2) Enter로 시작, 방향키로 🐱를 움직여 🔑 열쇠를 먹고 🚪 계단으로 이동 3) 끝나면 Enter로 다시 시작
 3. 무엇이 보이면 통과: 규칙·조작·남은 시간이 화면에 항상 표시 / 한 칸씩 이동하고 30초 안에 성공 또는 실패 / 재시작하면 새 던전으로 초기화 / 우상단 "소리"·"움직임 줄이기" 스위치가 즉시 작동
 4. 안 될 때: 페이지가 안 열리면 배포 상태 확인 / 이동이 안 되면 다른 탭을 클릭했다가 돌아와 Enter로 재시작(자동 일시정지) / 화면이 깨지면 F12 콘솔의 첫 오류 확인
 

@@ -1,7 +1,12 @@
-# 30초 던전 🐱
+# MINI GAME ZONE 🎮
 
-매 판 새로운 던전에서 열쇠를 찾아 계단으로 탈출하는 **미니 로그라이크**.
-한 판은 최대 30초 — 슬라임이나 함정에 닿으면 즉시 실패합니다.
+김민기가 직접 만든 브라우저 미니게임 모음.
+첫 번째 게임: **30초 던전** — 매 판 새로운 던전에서 열쇠를 찾아 계단으로 탈출하는 미니 로그라이크.
+
+- 존(게임 선택): `index.html`
+- 게임 본체: `dungeon.html` + `game.js` + `styles.css`
+- 에셋: `assets/sprites/` 픽셀 SVG 스프라이트 (고양이·슬라임·함정·열쇠·계단)
+- 효과음·배경음: WebAudio API 실시간 생성 (파일 없음)
 
 ## 규칙
 
@@ -22,8 +27,8 @@
 
 ## 실행
 
-- 배포: https://sterran123.github.io/30s-dungeon/ (GitHub Pages)
-- 로컬: `node tools/serve.mjs` → http://localhost:8081
+- 배포: https://sterran123.github.io/mini-game-zone/ (GitHub Pages)
+- 로컬: `node tools/serve.mjs` → http://localhost:8081 → 존에서 30초 던전 카드 클릭
 
 ## 기술 메모
 
