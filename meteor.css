@@ -1,0 +1,38 @@
+/* ===== 메테오 런 — 캔버스 ===== */
+.canvas-area {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+}
+#gameCanvas {
+  display: block;
+  width: 100%;
+  border: 3px solid var(--wall);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  background: #17141F;
+  touch-action: none;      /* 드래그 조작용 */
+  cursor: crosshair;
+}
+.canvas-area.danger #gameCanvas { border-color: var(--danger); }
+.canvas-area.shake #gameCanvas { animation: shake .3s ease; }
+
+/* 시간 경고 없이 레벨업 표시 */
+.level-flash {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  pointer-events: none; z-index: 4;
+}
+.level-flash span {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.8rem; color: var(--gold);
+  text-shadow: 3px 3px 0 rgba(0,0,0,.5), 0 0 30px rgba(255,209,102,.5);
+  animation: levelPop 1.1s ease forwards;
+}
+@keyframes levelPop {
+  0% { transform: scale(.6); opacity: 0; }
+  25% { transform: scale(1.15); opacity: 1; }
+  70% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+html.reduce-motion .canvas-area.shake #gameCanvas { animation: none; }
+html.reduce-motion .level-flash span { animation-duration: .01s; }

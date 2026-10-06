@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>메테오 런 — 김민기의 회피 서바이벌</title>
+  <meta name="description" content="쏟아지는 운석을 피해 최대한 오래 버티는 회피 서바이벌. 별을 먹고 점수를 올리세요.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="meteor.css">
+</head>
+<body>
+  <a class="skip-link" href="#gameCanvas">게임으로 바로 가기</a>
+
+  <header class="topbar">
+    <p class="logo"><a href="index.html" class="logo-back">◂ ZONE</a> 메테오 런<span class="logo-dot">.</span></p>
+    <div class="switches">
+      <button class="switch" id="soundSwitch" role="switch" aria-checked="true" aria-label="소리">
+        <span class="track"><span class="thumb"></span></span> 소리
+      </button>
+      <button class="switch" id="motionSwitch" role="switch" aria-checked="false" aria-label="움직임 줄이기">
+        <span class="track"><span class="thumb"></span></span> 움직임 줄이기
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="game-wrap" aria-label="게임 영역">
+      <div class="rules-line">
+        운석을 피해 <b>최대한 오래</b> 버티세요 — ⭐ 별을 먹으면 점수 UP · 시간이 갈수록 빨라집니다
+      </div>
+
+      <div class="hud">
+        <div class="hud-item"><span class="hud-label">생존</span><span id="timeNum" class="hud-val">0.0s</span></div>
+        <div class="hud-item"><span class="hud-label">별</span><span id="starNum" class="hud-val">0</span></div>
+        <div class="hud-item"><span class="hud-label">LV</span><span id="levelNum" class="hud-val">1</span></div>
+        <div class="hud-item"><span class="hud-label">최고</span><span id="bestNum" class="hud-val">—</span></div>
+      </div>
+
+      <div class="canvas-area" id="canvasArea">
+        <canvas id="gameCanvas" width="480" height="640" role="img" aria-label="메테오 런 게임 화면 — 로켓을 좌우로 움직여 운석을 피합니다"></canvas>
+        <div class="overlay" id="overlay">
+          <div class="overlay-card">
+            <p class="overlay-mascot">🚀</p>
+            <p class="overlay-title" id="overlayTitle">메테오 런</p>
+            <p class="overlay-msg" id="overlayMsg">쏟아지는 운석을 피해 오래 버티세요.<br>별을 먹으면 점수가 오릅니다!</p>
+            <button class="btn-primary" id="startBtn">출발 (Enter)</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
+      <p class="controls-line">방향키·A D 이동 · 드래그로도 이동 · P 일시정지 · R 재시작</p>
+    </section>
+
+    <section class="records" aria-label="플레이 기록">
+      <div class="records-head">
+        <h2>플레이 기록</h2>
+        <div class="records-actions">
+          <button id="copyLog" class="btn-ghost">기록 복사</button>
+          <button id="clearLog" class="btn-ghost">기록 초기화</button>
+        </div>
+      </div>
+      <p class="records-hint">최고 기록: <b id="bestLine">—</b> · 판마다 생존 시간·별·도달 레벨이 자동 저장됩니다</p>
+      <table class="log-table">
+        <thead><tr><th>#</th><th>생존</th><th>별</th><th>LV</th><th>피한 운석</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="meteor.js" defer></script>
+</body>
+</html>
