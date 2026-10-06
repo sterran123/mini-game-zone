@@ -93,7 +93,7 @@ function bgmStop() {
 }
 
 // ----- 게임 상태 -----
-const state = { phase: 'title', t: 0, px: W / 2, meteors: [], stars: [], parts: [], clouds: [],
+const state = { phase: 'title', t: 0, lt: 0, px: W / 2, meteors: [], stars: [], parts: [], clouds: [],
                 bgStars: [], spawnT: 0, starT: 0, level: 1, dodged: 0, starCount: 0,
                 last: 0, raf: 0, keyL: false, keyR: false, targetX: null, tilt: 0,
                 boss: null, bossAt: 0, bullets: [], shots: [], shotT: 0 };
@@ -106,7 +106,7 @@ const spawnInterval = (t) => Math.max(CONFIG.minInterval, CONFIG.baseInterval - 
 
 function newGame() {
   Object.assign(state, {
-    phase: 'playing', t: 0, px: W / 2, meteors: [], stars: [], parts: [],
+    phase: 'playing', t: 0, lt: 0, px: W / 2, meteors: [], stars: [], parts: [],
     bullets: [], shots: [], boss: null, bossAt: 0, shotT: 0,
     spawnT: 600, starT: 1200, level: 1, dodged: 0, starCount: 0, targetX: null, tilt: 0,
     clouds: state.clouds.length ? state.clouds : [{ x: 60, y: 90, s: 1.2, v: 14 }, { x: 340, y: 200, s: .9, v: 20 }],
@@ -129,8 +129,10 @@ function loop(now) {
 }
 function update(dt) {
   state.t += dt * 1000;
+  // 레벨용 시간은 보스전 중엔 멈춤 (점수용 t는 계속 흐름)
+  if (!state.boss) state.lt += dt * 1000;
   // 레벨업 (보스전 중엔 레벨 고정)
-  const lv = levelAt(state.t);
+  const lv = levelAt(state.lt);
   if (lv !== state.level && !state.boss) {
     state.level = lv;
     sfx.levelUp(); bgmStart();      // 배경음 빨라짐
@@ -155,7 +157,7 @@ function update(dt) {
   // 운석 생성 (보스전 중엔 잠시 멈춤)
   state.spawnT -= dt * 1000;
   if (state.spawnT <= 0 && !state.boss) {
-    state.spawnT = spawnInterval(state.t) * rand(.7, 1.3);
+    state.spawnT = spawnInterval(state.lt) * rand(.7, 1.3);
     state.meteors.push({ x: rand(24, W - 24), y: -40, r: rand(15, 24),
       vy: CONFIG.fallBase + state.level * CONFIG.fallRamp + rand(0, 60),
       vx: rand(-24, 24), rot: rand(0, 6.28), spin: rand(-2.5, 2.5), passed: false });
