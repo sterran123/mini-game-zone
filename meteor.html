@@ -34,6 +34,13 @@
           <p class="overlay-mascot">🚀</p>
           <p class="overlay-title" id="overlayTitle">메테오 런</p>
           <p class="overlay-msg" id="overlayMsg">쏟아지는 운석을 피해 오래 버티세요.</p>
+          <div class="name-entry" id="nameEntry" hidden>
+            <p class="name-hint">순위 진입! 이름을 남기세요</p>
+            <div class="name-row">
+              <input id="nameInput" maxlength="8" placeholder="이름" autocomplete="off">
+              <button class="btn-ghost" id="nameSave">등록</button>
+            </div>
+          </div>
           <div class="overlay-btns">
             <button class="btn-primary" id="startBtn">출발 (Enter)</button>
             <div class="overlay-btns-sub">
@@ -77,8 +84,8 @@
       </div>
       <p class="records-hint">최고 기록: <b id="bestLine">—</b> · 생존 시간 순으로 정렬됩니다</p>
       <table class="log-table">
-        <thead><tr><th>#</th><th>생존</th><th>별</th><th>LV</th><th>원인</th></tr></thead>
-        <tbody id="logBody"><tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
+        <thead><tr><th>#</th><th>이름</th><th>생존</th><th>별</th><th>LV</th><th>원인</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="6" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
       </table>
       <button class="btn-primary" id="recordsClose">닫기 (Esc)</button>
     </div>

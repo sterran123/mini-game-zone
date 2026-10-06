@@ -17,7 +17,8 @@ const canvas = $('gameCanvas'), ctx2d = canvas.getContext('2d');
 const overlay = $('overlay'), overlayTitle = $('overlayTitle'), overlayMsg = $('overlayMsg'),
       startBtn = $('startBtn'), statusLine = $('statusLine'),
       bestLine = $('bestLine'), logBody = $('logBody'),
-      howModal = $('howModal'), recordsModal = $('recordsModal');
+      howModal = $('howModal'), recordsModal = $('recordsModal'),
+      nameEntry = $('nameEntry'), nameInput = $('nameInput'), nameSave = $('nameSave');
 ctx2d.imageSmoothingEnabled = false;
 
 // ----- 스프라이트 -----
@@ -116,6 +117,7 @@ function newGame() {
     clouds: state.clouds.length ? state.clouds : [{ x: 60, y: 90, s: 1.2, v: 14 }, { x: 340, y: 200, s: .9, v: 20 }],
   });
   overlay.hidden = true;
+  nameEntry.hidden = true;   // 이름 입력창은 판 종료 때만
   setStatus('출발! 운석을 피하세요');
   sfx.start(); bgmStart();
   state.last = performance.now();
@@ -512,8 +514,15 @@ function endGame(cause = '운석') {
   const ms = Math.round(state.t);
   const isBest = ms > stats.best;
   if (isBest) stats.best = ms;
-  stats.plays.push({ ms, stars: state.starCount, level: state.level, cause, cfg: `i${CONFIG.baseInterval}f${CONFIG.fallBase}` });
+  const rec = { ms, stars: state.starCount, level: state.level, cause, cfg: `i${CONFIG.baseInterval}f${CONFIG.fallBase}`, name: '' };
+  stats.plays.push(rec);
   saveStats(); renderLog(); hud();
+  // 순위표 10위 안에 들면 이름 입력 제안
+  const rank = [...stats.plays].sort((a, b) => b.ms - a.ms).indexOf(rec);
+  if (rank >= 0 && rank < 10) {
+    nameEntry.hidden = false;
+    nameInput.value = localStorage.getItem('meteor-name') || '';
+  } else nameEntry.hidden = true;
   document.querySelector('.overlay-mascot').textContent = '💥';
   overlayTitle.textContent = isBest ? '신기록!' : '추락…';
   overlayMsg.innerHTML = `${(ms / 1000).toFixed(1)}초 생존 · ⭐ ${state.starCount}개 · LV ${state.level} 도달${isBest ? ' <b style="color:var(--gold)">NEW BEST</b>' : ''}<br>Enter 또는 버튼으로 다시 출발.`;
@@ -526,6 +535,7 @@ function endGame(cause = '운석') {
 function pauseGame() {
   if (state.phase !== 'playing') return;
   state.phase = 'paused'; bgmStop();
+  nameEntry.hidden = true;
   document.querySelector('.overlay-mascot').textContent = '⏸️';
   overlayTitle.textContent = '일시정지';
   overlayMsg.innerHTML = 'P 또는 버튼으로 재개 — 시간은 멈춰 있습니다.';
@@ -594,9 +604,22 @@ function renderLog() {
   const rows = [...stats.plays].sort((a, b) => b.ms - a.ms).slice(0, 10);
   logBody.innerHTML = rows.length
     ? rows.map((p, i) => `<tr class="${i < 3 ? 'rank-' + (i + 1) : ''}"><td>${MEDALS[i] ?? i + 1}</td>` +
+        `<td>${p.name || '—'}</td>` +
         `<td class="${p.ms >= stats.best && stats.best ? 'win' : ''}">${(p.ms / 1000).toFixed(1)}s</td>` +
         `<td>${p.stars}</td><td>${p.level}</td><td>${p.cause ?? '운석'}</td></tr>`).join('')
-    : '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>';
+    : '<tr><td colspan="6" class="log-empty">아직 기록이 없습니다</td></tr>';
+}
+// 이름 등록 — 방금 판 기록에 이름을 심는다
+nameSave.addEventListener('click', saveName);
+nameInput.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter') saveName(); });
+function saveName() {
+  const last = stats.plays[stats.plays.length - 1];
+  if (!last) return;
+  last.name = nameInput.value.trim().slice(0, 8) || '익명';
+  localStorage.setItem('meteor-name', last.name);
+  saveStats(); renderLog();
+  nameEntry.hidden = true;
+  setStatus(`${last.name} — ${(last.ms / 1000).toFixed(1)}초 기록됨`);
 }
 function openModal(m) { closeModals(); m.hidden = false; }
 function closeModals() { howModal.hidden = recordsModal.hidden = true; }
@@ -610,9 +633,9 @@ for (const m of [howModal, recordsModal]) {
 }
 $('copyLog').addEventListener('click', async () => {
   const lines = stats.plays.map((p, i) =>
-    `${i + 1},${(p.ms / 1000).toFixed(1)}s,${p.stars},${p.level},${p.cause ?? '운석'},${p.cfg}`);
+    `${i + 1},${p.name || ''},${(p.ms / 1000).toFixed(1)}s,${p.stars},${p.level},${p.cause ?? '운석'},${p.cfg}`);
   try {
-    await navigator.clipboard.writeText('회차,생존,별,레벨,원인,설정\n' + lines.join('\n'));
+    await navigator.clipboard.writeText('회차,이름,생존,별,레벨,원인,설정\n' + lines.join('\n'));
     setStatus('기록을 복사했습니다 📋');
   } catch { setStatus('복사 실패 — 수동으로 적어주세요'); }
 });

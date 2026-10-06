@@ -56,6 +56,23 @@ html.reduce-motion .level-flash span { animation-duration: .01s; }
 .overlay-btns { display: grid; gap: 10px; justify-items: center; }
 .overlay-btns-sub { display: flex; gap: 8px; }
 
+/* ----- 순위 등록 (이름 입력) ----- */
+.name-entry {
+  margin-bottom: 16px;
+  background: rgba(139,124,255,.12);
+  border: 1px solid rgba(139,124,255,.35);
+  border-radius: 12px; padding: 12px 14px;
+}
+.name-hint { font-size: .8rem; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+.name-row { display: flex; gap: 8px; }
+#nameInput {
+  flex: 1; min-width: 0;
+  font: inherit; font-weight: 700; font-size: .9rem;
+  background: #17141F; color: var(--ink);
+  border: 1px solid rgba(255,255,255,.15); border-radius: 9px;
+  padding: 8px 12px; text-align: center;
+}
+
 /* ----- 팝업 모달 ----- */
 .modal {
   position: fixed; inset: 0; z-index: 80;
