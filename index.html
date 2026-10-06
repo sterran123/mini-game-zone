@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>30초 던전 — 김민기의 미니 로그라이크</title>
+  <meta name="description" content="30초 안에 열쇠를 찾아 계단으로 탈출하는 한 판 로그라이크. 매 판 새로운 던전.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#board">게임으로 바로 가기</a>
+
+  <header class="topbar">
+    <p class="logo">30초 던전<span class="logo-dot">.</span></p>
+    <div class="switches">
+      <button class="switch" id="soundSwitch" role="switch" aria-checked="true" aria-label="소리">
+        <span class="track"><span class="thumb"></span></span> 소리
+      </button>
+      <button class="switch" id="motionSwitch" role="switch" aria-checked="false" aria-label="움직임 줄이기">
+        <span class="track"><span class="thumb"></span></span> 움직임 줄이기
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="game-wrap" aria-label="게임 영역">
+      <div class="rules-line">
+        🔑 열쇠를 먹고 → 🚪 계단으로 탈출 — <b>30초 안에!</b> &nbsp;🟢 슬라임 · 🔥 함정에 닿으면 끝
+      </div>
+
+      <div class="hud">
+        <div class="hud-item hud-timer">
+          <span class="hud-label">남은 시간</span>
+          <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+          <span class="timer-num" id="timerNum">30.0</span>
+        </div>
+        <div class="hud-item"><span class="hud-label">열쇠</span><span id="keyState" class="hud-val">없음</span></div>
+        <div class="hud-item"><span class="hud-label">이동</span><span id="moveCount" class="hud-val">0</span></div>
+        <div class="hud-item"><span class="hud-label">전적</span><span id="scoreLine" class="hud-val">0승 0패</span></div>
+      </div>
+
+      <div class="board-area">
+        <div class="board" id="board" role="img" aria-label="던전 지도 — 🐱 나, 🔑 열쇠, 🚪 계단, 🟢 슬라임, 🔥 함정, 🧱 벽"></div>
+        <div class="overlay" id="overlay">
+          <div class="overlay-card">
+            <p class="overlay-title" id="overlayTitle">30초 던전</p>
+            <p class="overlay-msg" id="overlayMsg">매 판 새로운 던전에서 열쇠를 찾아 탈출하세요.<br>슬라임과 함정에 닿으면 끝!</p>
+            <button class="btn-primary" id="startBtn">시작하기 (Enter)</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 시작</p>
+      <p class="controls-line">방향키·WASD 이동 · P 일시정지 · R 재시작</p>
+
+      <div class="dpad" aria-label="터치 조작">
+        <span></span>
+        <button data-dx="0" data-dy="-1" aria-label="위로 이동">↑</button>
+        <span></span>
+        <button data-dx="-1" data-dy="0" aria-label="왼쪽으로 이동">←</button>
+        <button data-dx="0" data-dy="1" aria-label="아래로 이동">↓</button>
+        <button data-dx="1" data-dy="0" aria-label="오른쪽으로 이동">→</button>
+      </div>
+    </section>
+
+    <section class="records" aria-label="플레이 기록">
+      <div class="records-head">
+        <h2>플레이 기록</h2>
+        <div class="records-actions">
+          <button id="copyLog" class="btn-ghost">기록 복사</button>
+          <button id="clearLog" class="btn-ghost">기록 초기화</button>
+        </div>
+      </div>
+      <p class="records-hint">최고 기록: <b id="bestLine">—</b> · 판마다 결과·시간·실패 원인이 자동 저장됩니다</p>
+      <table class="log-table">
+        <thead><tr><th>#</th><th>결과</th><th>시간</th><th>원인</th><th>이동</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="game.js" defer></script>
+</body>
+</html>
