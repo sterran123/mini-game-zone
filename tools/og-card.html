@@ -8,44 +8,42 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { width: 1200px; height: 630px; overflow: hidden;
-    background: radial-gradient(1200px 700px at 20% -10%, #2A2140 0%, #17141F 45%, #0E0B14 100%);
+    background: radial-gradient(1200px 700px at 50% -10%, #2A2140 0%, #17141F 45%, #0E0B14 100%);
     font-family: 'Pretendard Variable', sans-serif; color: #F4EFFA; }
   .scene { position: relative; width: 1200px; height: 630px; }
   .star { position: absolute; background: #fff; border-radius: 50%; }
   .sprite { position: absolute; image-rendering: pixelated; }
-  .copy { position: absolute; left: 80px; top: 150px; }
-  .zone { font-family: 'Press Start 2P', monospace; font-size: 22px; color: #5CE0B3; letter-spacing: 4px; }
-  .title { font-family: 'Press Start 2P', monospace; font-size: 64px; color: #FFD166; margin-top: 22px;
-    text-shadow: 5px 5px 0 rgba(0,0,0,.5), 0 0 50px rgba(255,209,102,.35); }
-  .desc { font-size: 30px; font-weight: 700; color: #B9B1CE; margin-top: 30px; line-height: 1.45; }
+  .copy { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; }
+  .zone { font-family: 'Press Start 2P', monospace; font-size: 62px; color: #FFD166;
+    letter-spacing: 2px; text-shadow: 6px 6px 0 rgba(0,0,0,.5), 0 0 55px rgba(255,209,102,.4); }
+  .zone em { color: #5CE0B3; font-style: normal; }
+  .desc { font-size: 30px; font-weight: 700; color: #B9B1CE; margin-top: 36px; line-height: 1.45; }
   .desc b { color: #F4EFFA; }
-  .badges { display: flex; gap: 12px; margin-top: 42px; }
+  .badges { display: flex; gap: 14px; margin-top: 44px; }
   .badge { background: rgba(139,124,255,.16); border: 1px solid rgba(139,124,255,.45);
-    border-radius: 999px; padding: 10px 22px; font-size: 22px; font-weight: 700; color: #CDC3F5; }
+    border-radius: 999px; padding: 10px 26px; font-size: 24px; font-weight: 700; color: #CDC3F5; }
 </style>
 </head>
 <body>
 <div class="scene" id="scene">
   <div class="copy">
-    <p class="zone">MINI GAME ZONE</p>
-    <p class="title">메테오 런</p>
-    <p class="desc">쏟아지는 운석을 피해 <b>최대한 오래</b> 버티세요.<br>LV5마다 UFO 보스전 — 탄막을 피하며 역공!</p>
+    <p class="zone">MINI GAME<em>&nbsp;ZONE</em></p>
+    <p class="desc"><b>김민기</b>가 직접 만든 브라우저 미니게임 모음.<br>로켓으로 운석을 피하고, 블록을 쌓아 지워라.</p>
     <div class="badges">
-      <span class="badge">픽셀 아트</span><span class="badge">보스전 탄막</span><span class="badge">생존 순위표</span>
+      <span class="badge">🚀 메테오 런</span><span class="badge">🧱 테트리스</span><span class="badge">픽셀 아트</span>
     </div>
   </div>
 </div>
 <script>
-  // 배경 별
   const scene = document.getElementById('scene');
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < 80; i++) {
     const s = document.createElement('span');
     const sz = 2 + Math.random() * 3;
     Object.assign(s.style, { left: Math.random()*1200+'px', top: Math.random()*630+'px',
-      width: sz+'px', height: sz+'px', opacity: .15 + Math.random()*.6 });
+      width: sz+'px', height: sz+'px', opacity: .15 + Math.random()*.55 });
     s.className = 'star'; scene.appendChild(s);
   }
-  // 스프라이트 배치
   const put = (n, x, y, size, rot=0, alpha=1) => {
     const img = document.createElement('img');
     img.src = '../assets/sprites/' + n + '.svg'; img.className = 'sprite';
@@ -53,16 +51,20 @@
       transform: `rotate(${rot}deg)`, opacity: alpha });
     scene.appendChild(img);
   };
-  put('rocket', 940, 300, 150, -35);
-  put('meteor', 880, 80, 90, 30);
-  put('meteor', 1090, 190, 70, -20, .9);
-  put('meteor', 1010, 470, 110, 15, .85);
-  put('star', 700, 90, 44);
-  put('star', 660, 520, 34, 0, .85);
-  put('star', 1140, 360, 40);
-  put('boss', 850, 60, 120, 0, .95);
-  put('cloud', 760, 480, 150, 0, .35);
-  put('cloud', 1050, 30, 170, 0, .3);
+  // 왼쪽: 메테오 런 세트
+  put('rocket', 60, 240, 150, -35);
+  put('meteor', 60, 60, 80, 30);
+  put('meteor', 210, 470, 100, -15, .9);
+  put('star', 190, 120, 44);
+  put('star', 60, 480, 36, 0, .85);
+  put('boss', 240, 50, 110, 0, .95);
+  // 오른쪽: 테트리스 세트
+  put('tetris', 1000, 90, 150, 12);
+  put('tetris', 900, 420, 130, -14, .95);
+  put('meteor', 1090, 380, 80, 20, .8);
+  put('star', 940, 240, 40);
+  put('cloud', 380, 30, 150, 0, .3);
+  put('cloud', 830, 520, 170, 0, .28);
 </script>
 </body>
 </html>
