@@ -8,7 +8,7 @@ const CONFIG = {
   fallRamp: 14,        // 레벨당 추가 속도
   playerSpeed: 420,    // 키보드 이동 속도
   starInterval: 3200,  // 별 생성 간격
-  levelUpMs: 15000,    // 레벨업 주기
+  levelUpMs: 12000,    // 레벨업 주기 — 5의 배수 레벨에서 보스 출현
 };
 
 const W = 480, H = 640;
@@ -23,7 +23,7 @@ ctx2d.imageSmoothingEnabled = false;
 // ----- 스프라이트 -----
 const SPR = 'assets/sprites/';
 const imgs = {};
-for (const n of ['rocket', 'meteor', 'star', 'cloud']) {
+for (const n of ['rocket', 'meteor', 'star', 'cloud', 'boss']) {
   imgs[n] = new Image(); imgs[n].src = SPR + n + '.svg';
 }
 
@@ -64,6 +64,10 @@ const sfx = {
   whoosh: () => beep(300, .12, 'sawtooth', .03, 900),
   star:   () => { beep(880, .07, 'square', .06); beep(1174, .09, 'square', .06, null, .06); },
   boom:   () => { beep(160, .35, 'sawtooth', .1, 45); beep(80, .4, 'square', .08, 30, .05); },
+  shoot:  () => beep(720, .03, 'square', .02),
+  bossHit:() => beep(1200, .04, 'square', .05, 700),
+  alarm:  () => [330, 330, 330].forEach((f, i) => beep(f, .14, 'square', .08, null, i * .18)),
+  bossDown:() => [523, 659, 784, 1047, 1319].forEach((f, i) => beep(f, .12, 'square', .08, null, i * .08)),
   levelUp:() => [523, 784, 1047].forEach((f, i) => beep(f, .1, 'square', .07, null, i * .07)),
   start:  () => beep(330, .1, 'triangle', .07, 660),
 };
@@ -91,7 +95,8 @@ function bgmStop() {
 // ----- 게임 상태 -----
 const state = { phase: 'title', t: 0, px: W / 2, meteors: [], stars: [], parts: [], clouds: [],
                 bgStars: [], spawnT: 0, starT: 0, level: 1, dodged: 0, starCount: 0,
-                last: 0, raf: 0, keyL: false, keyR: false, targetX: null, tilt: 0 };
+                last: 0, raf: 0, keyL: false, keyR: false, targetX: null, tilt: 0,
+                boss: null, bossAt: 0, bullets: [], shots: [], shotT: 0 };
 for (let i = 0; i < 40; i++) state.bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2 + .5, tw: Math.random() * 6.28 });
 
 const PSIZE = 46, PY = H - 84;
@@ -102,7 +107,8 @@ const spawnInterval = (t) => Math.max(CONFIG.minInterval, CONFIG.baseInterval - 
 function newGame() {
   Object.assign(state, {
     phase: 'playing', t: 0, px: W / 2, meteors: [], stars: [], parts: [],
-    spawnT: 600, starT: 1200, level: 1, dodged: 0, starCount: 0, targetX: null,
+    bullets: [], shots: [], boss: null, bossAt: 0, shotT: 0,
+    spawnT: 600, starT: 1200, level: 1, dodged: 0, starCount: 0, targetX: null, tilt: 0,
     clouds: state.clouds.length ? state.clouds : [{ x: 60, y: 90, s: 1.2, v: 14 }, { x: 340, y: 200, s: .9, v: 20 }],
   });
   overlay.hidden = true;
@@ -123,12 +129,16 @@ function loop(now) {
 }
 function update(dt) {
   state.t += dt * 1000;
-  // 레벨업
+  // 레벨업 (보스전 중엔 레벨 고정)
   const lv = levelAt(state.t);
-  if (lv !== state.level) {
+  if (lv !== state.level && !state.boss) {
     state.level = lv;
     sfx.levelUp(); bgmStart();      // 배경음 빨라짐
     flash('LEVEL ' + lv + '!');
+  }
+  // 보스 등장: 5의 배수 레벨
+  if (!state.boss && state.level % 5 === 0 && state.level > 0 && state.bossAt !== state.level) {
+    spawnBoss(state.level);
   }
   // 플레이어 이동: 포인터 목표 > 키 속도
   if (state.targetX !== null) {
@@ -142,14 +152,16 @@ function update(dt) {
   const tiltTarget = ((state.keyR ? 1 : 0) - (state.keyL ? 1 : 0)) * .3
     + (state.targetX !== null ? Math.sign(state.targetX - state.px) * Math.min(.2, Math.abs(state.targetX - state.px) / 300) : 0);
   state.tilt += (Math.max(-.35, Math.min(.35, tiltTarget)) - state.tilt) * Math.min(1, dt * 12);
-  // 운석 생성
+  // 운석 생성 (보스전 중엔 잠시 멈춤)
   state.spawnT -= dt * 1000;
-  if (state.spawnT <= 0) {
+  if (state.spawnT <= 0 && !state.boss) {
     state.spawnT = spawnInterval(state.t) * rand(.7, 1.3);
     state.meteors.push({ x: rand(24, W - 24), y: -40, r: rand(15, 24),
       vy: CONFIG.fallBase + state.level * CONFIG.fallRamp + rand(0, 60),
       vx: rand(-24, 24), rot: rand(0, 6.28), spin: rand(-2.5, 2.5), passed: false });
   }
+  // 보스전
+  if (state.boss) updateBoss(dt);
   // 별 생성
   state.starT -= dt * 1000;
   if (state.starT <= 0) {
@@ -167,7 +179,7 @@ function update(dt) {
     if (!m.whooshed && m.y > PY - 90 && Math.abs(m.x - px) < m.r + pw + 18) { m.whooshed = true; sfx.whoosh(); }
     // 원형 충돌
     const dx = m.x - px, dy = m.y - PY;
-    if (dx * dx + dy * dy < (m.r + pw - 6) ** 2) { hit(m); return; }
+    if (dx * dx + dy * dy < (m.r + pw - 6) ** 2) { hit('운석'); return; }
   }
   state.meteors = state.meteors.filter(m => m.y < H + 60);
   // 별 줍기
@@ -186,12 +198,94 @@ function update(dt) {
   state.parts = state.parts.filter(p => p.life > 0);
   hud();
 }
+// ----- 보스 -----
+function spawnBoss(lv) {
+  const tier = lv / 5;
+  state.boss = { tier, hp: 12 + tier * 8, maxHp: 12 + tier * 8,
+                 x: W / 2, y: -70, t: 0, aimT: 1400, fanT: 2200, ringT: 3000 };
+  state.shotT = 400;
+  flash('⚠ WARNING ⚠'); sfx.alarm();
+  setStatus(`보스 출현! 탄막을 피하면서 총알을 맞히세요`);
+}
+function updateBoss(dt) {
+  const b = state.boss, pw = PSIZE / 2;
+  b.t += dt;
+  // 등장 후 좌우 사인 이동 + 상하 살랑
+  b.y += (90 + Math.sin(b.t * .7) * 16 - b.y) * Math.min(1, dt * 2.2);
+  b.x = W / 2 + Math.sin(b.t * (.5 + b.tier * .14)) * (140 + b.tier * 10);
+  // 플레이어 자동 사격
+  state.shotT -= dt * 1000;
+  if (state.shotT <= 0 && b.y > 0) {
+    state.shotT = 230;
+    state.shots.push({ x: state.px, y: PY - PSIZE / 2 - 4, vy: -560 });
+    sfx.shoot();
+  }
+  // 보스 패턴: 티어가 오를수록 패턴이 늘고 빨라짐
+  if (b.t > 1) {
+    b.aimT -= dt * 1000;
+    if (b.aimT <= 0) { b.aimT = Math.max(420, 950 - b.tier * 90); fireAimed(b); }
+  }
+  if (b.tier >= 2 && b.t > 1.5) {
+    b.fanT -= dt * 1000;
+    if (b.fanT <= 0) { b.fanT = Math.max(850, 1400 - b.tier * 130); fireFan(b); }
+  }
+  if (b.tier >= 3 && b.t > 2) {
+    b.ringT -= dt * 1000;
+    if (b.ringT <= 0) { b.ringT = Math.max(1250, 2100 - b.tier * 160); fireRing(b); }
+  }
+  // 내 총알 → 보스 명중
+  for (const s of state.shots) {
+    s.y += s.vy * dt;
+    if (!s.got && Math.abs(s.x - b.x) < 40 && Math.abs(s.y - b.y) < 28) {
+      s.got = true; b.hp--; sfx.bossHit();
+      state.parts.push({ x: s.x, y: s.y, vx: rand(-80, 80), vy: rand(-100, -20), life: .3, c: '#5CE0B3' });
+    }
+  }
+  state.shots = state.shots.filter(s => !s.got && s.y > -20);
+  // 보스 탄 → 플레이어 충돌
+  for (const bl of state.bullets) {
+    bl.x += bl.vx * dt; bl.y += bl.vy * dt;
+    const dx = bl.x - state.px, dy = bl.y - PY;
+    if (dx * dx + dy * dy < (bl.r + pw - 6) ** 2) { hit('보스탄'); return; }
+  }
+  state.bullets = state.bullets.filter(bl => bl.y < H + 30 && bl.y > -30 && bl.x > -30 && bl.x < W + 30);
+  if (b.hp <= 0) killBoss();
+}
+function fireAimed(b) {   // 플레이어를 향한 단발
+  const dx = state.px - b.x, dy = PY - b.y, len = Math.hypot(dx, dy) || 1;
+  const sp = 170 + b.tier * 22;
+  state.bullets.push({ x: b.x, y: b.y + 16, vx: dx / len * sp, vy: dy / len * sp, r: 5 });
+}
+function fireFan(b) {     // 플레이어 방향 3방향 팬
+  const base = Math.atan2(PY - b.y, state.px - b.x), sp = 150 + b.tier * 16;
+  for (const a of [-.38, 0, .38]) {
+    state.bullets.push({ x: b.x, y: b.y + 14, vx: Math.cos(base + a) * sp, vy: Math.sin(base + a) * sp, r: 5 });
+  }
+}
+function fireRing(b) {    // 원형 탄환
+  const n = 10, sp = 120 + b.tier * 12;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + b.t;
+    state.bullets.push({ x: b.x, y: b.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: 5 });
+  }
+}
+function killBoss() {
+  const b = state.boss;
+  explode(b.x, b.y); explode(b.x - 26, b.y + 8); explode(b.x + 26, b.y - 6);
+  state.starCount += 3;                      // 격파 보너스 ⭐3
+  state.bossAt = state.level;
+  state.boss = null;
+  state.bullets = []; state.shots = [];
+  state.spawnT = 900;
+  flash('BOSS DOWN!'); sfx.bossDown();
+  setStatus('보스 격파! ⭐+3 — 계속 버티세요');
+}
 function sparkle(x, y) {
   for (let i = 0; i < 6; i++) state.parts.push({ x, y, vx: rand(-90, 90), vy: rand(-140, -30), life: .45, c: '#FFD166' });
 }
-function hit(m) {
+function hit(cause) {
   explode(state.px, PY);
-  endGame();
+  endGame(cause);
 }
 function explode(x, y) {
   if (reduceMotion()) { state.parts.push({ x, y, vx: 0, vy: 0, life: .3, c: '#FF6B5E' }); return; }
@@ -228,6 +322,34 @@ function draw() {
   for (const s of state.stars) {
     const sc = 28 + Math.sin(s.tw) * 3;
     ctx2d.drawImage(imgs.star, s.x - sc / 2, s.y - sc / 2, sc, sc);
+  }
+  // 보스 탄환·내 총알
+  for (const bl of state.bullets) {
+    ctx2d.fillStyle = '#FF5EA0';
+    ctx2d.beginPath(); ctx2d.arc(bl.x, bl.y, bl.r, 0, 6.28); ctx2d.fill();
+    ctx2d.fillStyle = '#FFD6EC';
+    ctx2d.beginPath(); ctx2d.arc(bl.x, bl.y, bl.r * .4, 0, 6.28); ctx2d.fill();
+  }
+  for (const s of state.shots) {
+    ctx2d.fillStyle = '#5CE0B3';
+    ctx2d.fillRect(s.x - 2, s.y - 8, 4, 12);
+    ctx2d.fillStyle = '#D8FFF0';
+    ctx2d.fillRect(s.x - 1, s.y - 8, 2, 12);
+  }
+  // 보스 + HP 바
+  if (state.boss) {
+    const b = state.boss;
+    ctx2d.save();
+    ctx2d.filter = `hue-rotate(${(b.tier - 1) * 55}deg)`;
+    ctx2d.drawImage(imgs.boss, b.x - 42, b.y - 30, 84, 60);
+    ctx2d.restore();
+    const bw = 200, bh = 8, bx = W / 2 - bw / 2, by = 48;
+    ctx2d.fillStyle = 'rgba(0,0,0,.55)'; ctx2d.fillRect(bx - 3, by - 3, bw + 6, bh + 6);
+    ctx2d.fillStyle = '#453D5C'; ctx2d.fillRect(bx, by, bw, bh);
+    ctx2d.fillStyle = '#FF6B5E'; ctx2d.fillRect(bx, by, bw * Math.max(0, b.hp) / b.maxHp, bh);
+    ctx2d.font = '700 9px "Press Start 2P", monospace';
+    ctx2d.textAlign = 'center'; ctx2d.fillStyle = '#FF6B5E';
+    ctx2d.fillText('BOSS', W / 2, by - 7);
   }
   // 운석 + 불꽃 꼬리
   for (const m of state.meteors) {
@@ -287,7 +409,7 @@ function draw() {
 }
 
 // ----- 종료 -----
-function endGame() {
+function endGame(cause = '운석') {
   state.phase = 'over';
   bgmStop(); sfx.boom();
   if (!reduceMotion()) $('canvasArea').classList.add('shake');
@@ -295,7 +417,7 @@ function endGame() {
   const ms = Math.round(state.t);
   const isBest = ms > stats.best;
   if (isBest) stats.best = ms;
-  stats.plays.push({ ms, stars: state.starCount, level: state.level, dodged: state.dodged, cfg: `i${CONFIG.baseInterval}f${CONFIG.fallBase}` });
+  stats.plays.push({ ms, stars: state.starCount, level: state.level, cause, cfg: `i${CONFIG.baseInterval}f${CONFIG.fallBase}` });
   saveStats(); renderLog(); hud();
   document.querySelector('.overlay-mascot').textContent = '💥';
   overlayTitle.textContent = isBest ? '신기록!' : '추락…';
@@ -376,14 +498,14 @@ function renderLog() {
   logBody.innerHTML = rows.length
     ? rows.map((p, i) => `<tr><td>${stats.plays.length - i}</td>` +
         `<td class="${p.ms >= stats.best && stats.best ? 'win' : ''}">${(p.ms / 1000).toFixed(1)}s</td>` +
-        `<td>${p.stars}</td><td>${p.level}</td><td>${p.dodged}</td></tr>`).join('')
+        `<td>${p.stars}</td><td>${p.level}</td><td>${p.cause ?? '운석'}</td></tr>`).join('')
     : '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>';
 }
 $('copyLog').addEventListener('click', async () => {
   const lines = stats.plays.map((p, i) =>
-    `${i + 1},${(p.ms / 1000).toFixed(1)}s,${p.stars},${p.level},${p.dodged},${p.cfg}`);
+    `${i + 1},${(p.ms / 1000).toFixed(1)}s,${p.stars},${p.level},${p.cause ?? '운석'},${p.cfg}`);
   try {
-    await navigator.clipboard.writeText('회차,생존,별,레벨,피한운석,설정\n' + lines.join('\n'));
+    await navigator.clipboard.writeText('회차,생존,별,레벨,원인,설정\n' + lines.join('\n'));
     setStatus('기록을 복사했습니다 📋');
   } catch { setStatus('복사 실패 — 수동으로 적어주세요'); }
 });
