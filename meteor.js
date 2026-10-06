@@ -16,8 +16,8 @@ const $ = (id) => document.getElementById(id);
 const canvas = $('gameCanvas'), ctx2d = canvas.getContext('2d');
 const overlay = $('overlay'), overlayTitle = $('overlayTitle'), overlayMsg = $('overlayMsg'),
       startBtn = $('startBtn'), statusLine = $('statusLine'),
-      timeNum = $('timeNum'), starNum = $('starNum'), levelNum = $('levelNum'),
-      bestNum = $('bestNum'), bestLine = $('bestLine'), logBody = $('logBody');
+      bestLine = $('bestLine'), logBody = $('logBody'),
+      howModal = $('howModal'), recordsModal = $('recordsModal');
 ctx2d.imageSmoothingEnabled = false;
 
 // ----- 스프라이트 -----
@@ -474,10 +474,18 @@ function draw() {
   ctx2d.globalAlpha = 1;
   // 캔버스 안 점수: 생존 시간(중앙)·LV(우상단) — 시선이 캔버스에 머물도록
   if (state.phase === 'playing' || state.phase === 'paused') {
+    // 별 개수 (좌상단 스프라이트 + 카운트)
+    ctx2d.drawImage(imgs.star, 12, 10, 20, 20);
+    ctx2d.font = '700 12px "Press Start 2P", monospace';
+    ctx2d.textAlign = 'left';
+    ctx2d.fillStyle = 'rgba(255,209,102,.92)';
+    ctx2d.fillText('x' + state.starCount, 38, 26);
+    // 생존 시간 (중앙 상단)
     ctx2d.font = '700 20px "Press Start 2P", monospace';
     ctx2d.textAlign = 'center';
     ctx2d.fillStyle = 'rgba(244,239,250,.92)';
     ctx2d.fillText((state.t / 1000).toFixed(1), W / 2, 34);
+    // 레벨 (우상단)
     ctx2d.font = '700 12px "Press Start 2P", monospace';
     ctx2d.textAlign = 'right';
     ctx2d.fillStyle = 'rgba(92,224,179,.9)';
@@ -541,6 +549,10 @@ function nudge(dir) {   // 탭 한 번 = 한 발짝 (짧게 눌러도 반응)
 }
 document.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
+  if (anyModalOpen()) {                    // 팝업이 열려 있으면 Esc/Enter는 닫기만
+    if (k === 'escape' || k === 'enter') { e.preventDefault(); closeModals(); }
+    return;
+  }
   if (k === 'arrowleft' || k === 'a') { e.preventDefault(); if (!e.repeat && !state.keyL && state.phase === 'playing') nudge(-1); held.l = state.keyL = true; return; }
   if (k === 'arrowright' || k === 'd') { e.preventDefault(); if (!e.repeat && !state.keyR && state.phase === 'playing') nudge(1); held.r = state.keyR = true; return; }
   if (k === 'p' || k === 'escape') { state.phase === 'playing' ? pauseGame() : resumeGame(); return; }
@@ -570,23 +582,31 @@ startBtn.addEventListener('click', () => state.phase === 'paused' ? resumeGame()
 document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
 window.addEventListener('blur', pauseGame);
 
-// ----- HUD·기록 -----
+// ----- HUD·기록·모달 -----
 function setStatus(msg) { statusLine.textContent = msg; }
 function hud() {
-  timeNum.textContent = (state.t / 1000).toFixed(1) + 's';
-  starNum.textContent = state.starCount;
-  levelNum.textContent = state.level;
-  bestNum.textContent = stats.best ? (stats.best / 1000).toFixed(1) + 's' : '—';
   bestLine.textContent = stats.best ? (stats.best / 1000).toFixed(1) + '초' : '—';
   $('canvasArea').classList.toggle('danger', state.phase === 'playing' && state.level >= 4);
 }
+// 순위표: 생존 시간 내림차순, 상위 10개 + 상위 3위 메달
+const MEDALS = ['🥇', '🥈', '🥉'];
 function renderLog() {
-  const rows = stats.plays.slice(-10).reverse();
+  const rows = [...stats.plays].sort((a, b) => b.ms - a.ms).slice(0, 10);
   logBody.innerHTML = rows.length
-    ? rows.map((p, i) => `<tr><td>${stats.plays.length - i}</td>` +
+    ? rows.map((p, i) => `<tr class="${i < 3 ? 'rank-' + (i + 1) : ''}"><td>${MEDALS[i] ?? i + 1}</td>` +
         `<td class="${p.ms >= stats.best && stats.best ? 'win' : ''}">${(p.ms / 1000).toFixed(1)}s</td>` +
         `<td>${p.stars}</td><td>${p.level}</td><td>${p.cause ?? '운석'}</td></tr>`).join('')
     : '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>';
+}
+function openModal(m) { closeModals(); m.hidden = false; }
+function closeModals() { howModal.hidden = recordsModal.hidden = true; }
+const anyModalOpen = () => !howModal.hidden || !recordsModal.hidden;
+$('howBtn').addEventListener('click', () => openModal(howModal));
+$('recordsBtn').addEventListener('click', () => { renderLog(); openModal(recordsModal); });
+$('howClose').addEventListener('click', closeModals);
+$('recordsClose').addEventListener('click', closeModals);
+for (const m of [howModal, recordsModal]) {
+  m.addEventListener('click', (e) => { if (e.target === m) closeModals(); });
 }
 $('copyLog').addEventListener('click', async () => {
   const lines = stats.plays.map((p, i) =>
