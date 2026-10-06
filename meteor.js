@@ -101,7 +101,7 @@ for (let i = 0; i < 40; i++) state.bgStars.push({ x: Math.random() * W, y: Math.
 
 const PSIZE = 46, PY = H - 84;
 const rand = (a, b) => a + Math.random() * (b - a);
-const levelAt = (t) => Math.min(5, 1 + Math.floor(t / CONFIG.levelUpMs));
+const levelAt = (t) => Math.min(99, 1 + Math.floor(t / CONFIG.levelUpMs));
 const spawnInterval = (t) => Math.max(CONFIG.minInterval, CONFIG.baseInterval - (t / 1000) * CONFIG.ramp);
 
 function newGame() {
@@ -201,7 +201,7 @@ function update(dt) {
 // ----- 보스 -----
 function spawnBoss(lv) {
   const tier = lv / 5;
-  state.boss = { tier, hp: 12 + tier * 8, maxHp: 12 + tier * 8,
+  state.boss = { tier, hp: 14 + tier * 10, maxHp: 14 + tier * 10,
                  x: W / 2, y: -70, t: 0, aimT: 1400, fanT: 2200, ringT: 3000 };
   state.shotT = 400;
   flash('⚠ WARNING ⚠'); sfx.alarm();
