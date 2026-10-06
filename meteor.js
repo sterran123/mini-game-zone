@@ -91,7 +91,7 @@ function bgmStop() {
 // ----- 게임 상태 -----
 const state = { phase: 'title', t: 0, px: W / 2, meteors: [], stars: [], parts: [], clouds: [],
                 bgStars: [], spawnT: 0, starT: 0, level: 1, dodged: 0, starCount: 0,
-                last: 0, raf: 0, keyL: false, keyR: false, targetX: null };
+                last: 0, raf: 0, keyL: false, keyR: false, targetX: null, tilt: 0 };
 for (let i = 0; i < 40; i++) state.bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2 + .5, tw: Math.random() * 6.28 });
 
 const PSIZE = 46, PY = H - 84;
@@ -138,6 +138,10 @@ function update(dt) {
   if (state.keyL) state.px -= CONFIG.playerSpeed * dt;
   if (state.keyR) state.px += CONFIG.playerSpeed * dt;
   state.px = Math.max(PSIZE / 2, Math.min(W - PSIZE / 2, state.px));
+  // 기울임: 이동 방향으로 로켓이 살짝 기울어짐
+  const tiltTarget = ((state.keyR ? 1 : 0) - (state.keyL ? 1 : 0)) * .3
+    + (state.targetX !== null ? Math.sign(state.targetX - state.px) * Math.min(.2, Math.abs(state.targetX - state.px) / 300) : 0);
+  state.tilt += (Math.max(-.35, Math.min(.35, tiltTarget)) - state.tilt) * Math.min(1, dt * 12);
   // 운석 생성
   state.spawnT -= dt * 1000;
   if (state.spawnT <= 0) {
@@ -172,6 +176,7 @@ function update(dt) {
     const dx = s.x - px, dy = s.y - PY;
     if (Math.abs(dx) < pw + 12 && Math.abs(dy) < pw + 12) {
       s.got = true; state.starCount++; sfx.star(); sparkle(s.x, s.y);
+      state.parts.push({ x: s.x, y: s.y - 14, vx: 0, vy: -60, life: .8, c: '#FFD166', txt: '+1' });
     }
   }
   state.stars = state.stars.filter(s => !s.got && s.y < H + 30);
@@ -240,23 +245,45 @@ function draw() {
   // 로켓 + 불꽃
   if (state.phase !== 'over') {
     const fx = state.px, flick = 10 + Math.sin(state.t / 40) * 4;
+    ctx2d.save();
+    ctx2d.translate(fx, PY); ctx2d.rotate(state.tilt);
     ctx2d.fillStyle = '#FF8C42';
     ctx2d.beginPath();
-    ctx2d.moveTo(fx - 9, PY + PSIZE / 2 - 4); ctx2d.lineTo(fx + 9, PY + PSIZE / 2 - 4);
-    ctx2d.lineTo(fx, PY + PSIZE / 2 + flick); ctx2d.fill();
+    ctx2d.moveTo(-9, PSIZE / 2 - 4); ctx2d.lineTo(9, PSIZE / 2 - 4);
+    ctx2d.lineTo(0, PSIZE / 2 + flick); ctx2d.fill();
     ctx2d.fillStyle = '#FFE08A';
     ctx2d.beginPath();
-    ctx2d.moveTo(fx - 4, PY + PSIZE / 2 - 4); ctx2d.lineTo(fx + 4, PY + PSIZE / 2 - 4);
-    ctx2d.lineTo(fx, PY + PSIZE / 2 + flick * .55); ctx2d.fill();
-    ctx2d.drawImage(imgs.rocket, fx - PSIZE / 2, PY - PSIZE / 2, PSIZE, PSIZE);
+    ctx2d.moveTo(-4, PSIZE / 2 - 4); ctx2d.lineTo(4, PSIZE / 2 - 4);
+    ctx2d.lineTo(0, PSIZE / 2 + flick * .55); ctx2d.fill();
+    ctx2d.drawImage(imgs.rocket, -PSIZE / 2, -PSIZE / 2, PSIZE, PSIZE);
+    ctx2d.restore();
   }
-  // 파티클
+  // 파티클 (+1 텍스트 포함)
   for (const p of state.parts) {
     ctx2d.globalAlpha = Math.min(1, p.life * 2);
-    ctx2d.fillStyle = p.c;
-    ctx2d.fillRect(p.x - 3, p.y - 3, 6, 6);
+    if (p.txt) {
+      ctx2d.font = '700 16px "Press Start 2P", monospace';
+      ctx2d.fillStyle = p.c;
+      ctx2d.textAlign = 'center';
+      ctx2d.fillText(p.txt, p.x, p.y);
+    } else {
+      ctx2d.fillStyle = p.c;
+      ctx2d.fillRect(p.x - 3, p.y - 3, 6, 6);
+    }
   }
   ctx2d.globalAlpha = 1;
+  // 캔버스 안 점수: 생존 시간(중앙)·LV(우상단) — 시선이 캔버스에 머물도록
+  if (state.phase === 'playing' || state.phase === 'paused') {
+    ctx2d.font = '700 20px "Press Start 2P", monospace';
+    ctx2d.textAlign = 'center';
+    ctx2d.fillStyle = 'rgba(244,239,250,.92)';
+    ctx2d.fillText((state.t / 1000).toFixed(1), W / 2, 34);
+    ctx2d.font = '700 12px "Press Start 2P", monospace';
+    ctx2d.textAlign = 'right';
+    ctx2d.fillStyle = 'rgba(92,224,179,.9)';
+    ctx2d.fillText('LV' + state.level, W - 12, 26);
+    ctx2d.textAlign = 'left';
+  }
 }
 
 // ----- 종료 -----
