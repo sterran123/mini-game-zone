@@ -245,12 +245,13 @@ function updateBoss(dt) {
   // 버프 타이머
   state.buffs.double = Math.max(0, state.buffs.double - dt);
   state.buffs.rapid = Math.max(0, state.buffs.rapid - dt);
-  // 파워업 스폰: 보스전 중 4.5초마다
+  // 파워업 스폰: 보스전 중 5초마다 (실드는 강력해서 20%만)
   state.itemT -= dt * 1000;
   if (state.itemT <= 0) {
-    state.itemT = 4500;
-    state.items.push({ x: rand(30, W - 30), y: -18, vy: 95,
-      type: ['double', 'rapid', 'shield'][Math.floor(Math.random() * 3)], tw: 0 });
+    state.itemT = 5000;
+    const roll = Math.random();
+    const type = roll < .4 ? 'double' : roll < .8 ? 'rapid' : 'shield';
+    state.items.push({ x: rand(30, W - 30), y: -18, vy: 95, type, tw: 0 });
   }
   for (const it of state.items) {
     it.y += it.vy * dt; it.tw += dt * 5;
