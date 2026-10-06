@@ -65,6 +65,8 @@ const sfx = {
   star:   () => { beep(880, .07, 'square', .06); beep(1174, .09, 'square', .06, null, .06); },
   boom:   () => { beep(160, .35, 'sawtooth', .1, 45); beep(80, .4, 'square', .08, 30, .05); },
   shoot:  () => beep(720, .03, 'square', .02),
+  item:   () => { beep(520, .07, 'square', .06, 900); beep(780, .08, 'square', .05, null, .07); },
+  shieldHit:() => beep(300, .12, 'triangle', .08, 500),
   bossHit:() => beep(1200, .04, 'square', .05, 700),
   alarm:  () => [330, 330, 330].forEach((f, i) => beep(f, .14, 'square', .08, null, i * .18)),
   bossDown:() => [523, 659, 784, 1047, 1319].forEach((f, i) => beep(f, .12, 'square', .08, null, i * .08)),
@@ -96,7 +98,8 @@ function bgmStop() {
 const state = { phase: 'title', t: 0, lt: 0, px: W / 2, meteors: [], stars: [], parts: [], clouds: [],
                 bgStars: [], spawnT: 0, starT: 0, level: 1, dodged: 0, starCount: 0,
                 last: 0, raf: 0, keyL: false, keyR: false, targetX: null, tilt: 0,
-                boss: null, bossAt: 0, bullets: [], shots: [], shotT: 0 };
+                boss: null, bossAt: 0, bullets: [], shots: [], shotT: 0,
+                items: [], itemT: 0, buffs: { double: 0, rapid: 0, shield: 0 } };
 for (let i = 0; i < 40; i++) state.bgStars.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() * 2 + .5, tw: Math.random() * 6.28 });
 
 const PSIZE = 46, PY = H - 84;
@@ -108,6 +111,7 @@ function newGame() {
   Object.assign(state, {
     phase: 'playing', t: 0, lt: 0, px: W / 2, meteors: [], stars: [], parts: [],
     bullets: [], shots: [], boss: null, bossAt: 0, shotT: 0,
+    items: [], itemT: 0, buffs: { double: 0, rapid: 0, shield: 0 },
     spawnT: 600, starT: 1200, level: 1, dodged: 0, starCount: 0, targetX: null, tilt: 0,
     clouds: state.clouds.length ? state.clouds : [{ x: 60, y: 90, s: 1.2, v: 14 }, { x: 340, y: 200, s: .9, v: 20 }],
   });
@@ -226,13 +230,40 @@ function updateBoss(dt) {
   b.eva = Math.max(-140, Math.min(140, b.eva));
   const bx = W / 2 + Math.sin(b.t * (.5 + b.tier * .14)) * (140 + b.tier * 10) + b.eva;
   b.x = Math.max(48, Math.min(W - 48, bx));
-  // 플레이어 자동 사격
+  // 플레이어 자동 사격 (연사 버프 = 간격 절반, 더블샷 = 두 갈래)
   state.shotT -= dt * 1000;
   if (state.shotT <= 0 && b.y > 0) {
-    state.shotT = 280;
-    state.shots.push({ x: state.px, y: PY - PSIZE / 2 - 4, vy: -560 });
+    state.shotT = state.buffs.rapid > 0 ? 140 : 280;
+    const y = PY - PSIZE / 2 - 4;
+    state.shots.push({ x: state.px, y, vy: -560 });
+    if (state.buffs.double > 0) {
+      state.shots.push({ x: state.px - 14, y, vy: -560 });
+      state.shots.push({ x: state.px + 14, y, vy: -560 });
+    }
     sfx.shoot();
   }
+  // 버프 타이머
+  state.buffs.double = Math.max(0, state.buffs.double - dt);
+  state.buffs.rapid = Math.max(0, state.buffs.rapid - dt);
+  // 파워업 스폰: 보스전 중 4.5초마다
+  state.itemT -= dt * 1000;
+  if (state.itemT <= 0) {
+    state.itemT = 4500;
+    state.items.push({ x: rand(30, W - 30), y: -18, vy: 95,
+      type: ['double', 'rapid', 'shield'][Math.floor(Math.random() * 3)], tw: 0 });
+  }
+  for (const it of state.items) {
+    it.y += it.vy * dt; it.tw += dt * 5;
+    const dx = it.x - state.px, dy = it.y - PY;
+    if (Math.abs(dx) < PSIZE / 2 + 14 && Math.abs(dy) < PSIZE / 2 + 14) {
+      it.got = true;
+      if (it.type === 'shield') { state.buffs.shield = 1; setStatus('🛡️ 실드 획득! 탄 1발 차단'); }
+      else if (it.type === 'double') { state.buffs.double = 8; setStatus('🔮 더블샷 8초!'); }
+      else { state.buffs.rapid = 8; setStatus('⚡ 연사 8초!'); }
+      sfx.item(); sparkle(it.x, it.y);
+    }
+  }
+  state.items = state.items.filter(it => !it.got && it.y < H + 20);
   // 보스 패턴: 티어가 오를수록 패턴이 늘고 빨라짐
   if (b.t > 1) {
     b.aimT -= dt * 1000;
@@ -259,9 +290,17 @@ function updateBoss(dt) {
   for (const bl of state.bullets) {
     bl.x += bl.vx * dt; bl.y += bl.vy * dt;
     const dx = bl.x - state.px, dy = bl.y - PY;
-    if (dx * dx + dy * dy < (bl.r + pw - 6) ** 2) { hit('보스탄'); return; }
+    if (dx * dx + dy * dy < (bl.r + pw - 6) ** 2) {
+      if (state.buffs.shield > 0) {         // 실드가 탄을 차단
+        state.buffs.shield = 0; bl.got = true;
+        sfx.shieldHit(); sparkle(state.px, PY);
+        setStatus('실드가 막았습니다!');
+        continue;
+      }
+      hit('보스탄'); return;
+    }
   }
-  state.bullets = state.bullets.filter(bl => bl.y < H + 30 && bl.y > -30 && bl.x > -30 && bl.x < W + 30);
+  state.bullets = state.bullets.filter(bl => !bl.got && bl.y < H + 30 && bl.y > -30 && bl.x > -30 && bl.x < W + 30);
   if (b.hp <= 0) killBoss();
 }
 function fireAimed(b) {   // 플레이어를 향한 단발
@@ -288,7 +327,8 @@ function killBoss() {
   state.starCount += 3;                      // 격파 보너스 ⭐3
   state.bossAt = state.level;
   state.boss = null;
-  state.bullets = []; state.shots = [];
+  state.bullets = []; state.shots = []; state.items = [];
+  state.buffs = { double: 0, rapid: 0, shield: 0 };   // 버프는 보스전 한정 — 남겨두지 않음
   state.spawnT = 900;
   flash('BOSS DOWN!'); sfx.bossDown();
   setStatus('보스 격파! ⭐+3 — 계속 버티세요');
@@ -349,6 +389,24 @@ function draw() {
     ctx2d.fillStyle = '#D8FFF0';
     ctx2d.fillRect(s.x - 1, s.y - 8, 2, 12);
   }
+  // 파워업 캡슐 (보스전 전용) — 색깔+알파벳으로 구분
+  const ITEM_STYLE = { double: ['#8B7CFF', 'D'], rapid: ['#FFD166', 'R'], shield: ['#5CE0B3', 'S'] };
+  for (const it of state.items) {
+    const [c, letter] = ITEM_STYLE[it.type];
+    const bob = Math.sin(it.tw) * 2;
+    ctx2d.save();
+    ctx2d.shadowColor = c; ctx2d.shadowBlur = 10;
+    ctx2d.fillStyle = c;
+    ctx2d.beginPath();
+    ctx2d.roundRect(it.x - 13, it.y - 13 + bob, 26, 26, 6);
+    ctx2d.fill();
+    ctx2d.shadowBlur = 0;
+    ctx2d.fillStyle = '#17141F';
+    ctx2d.font = '700 14px "Press Start 2P", monospace';
+    ctx2d.textAlign = 'center';
+    ctx2d.fillText(letter, it.x, it.y + 5 + bob);
+    ctx2d.restore();
+  }
   // 보스 + HP 바
   if (state.boss) {
     const b = state.boss;
@@ -391,6 +449,12 @@ function draw() {
     ctx2d.moveTo(-4, PSIZE / 2 - 4); ctx2d.lineTo(4, PSIZE / 2 - 4);
     ctx2d.lineTo(0, PSIZE / 2 + flick * .55); ctx2d.fill();
     ctx2d.drawImage(imgs.rocket, -PSIZE / 2, -PSIZE / 2, PSIZE, PSIZE);
+    // 실드 버블
+    if (state.buffs.shield > 0) {
+      ctx2d.strokeStyle = 'rgba(92,224,179,.85)';
+      ctx2d.lineWidth = 2.5;
+      ctx2d.beginPath(); ctx2d.arc(0, 0, PSIZE / 2 + 8 + Math.sin(state.t / 120) * 2, 0, 6.28); ctx2d.stroke();
+    }
     ctx2d.restore();
   }
   // 파티클 (+1 텍스트 포함)
@@ -417,6 +481,15 @@ function draw() {
     ctx2d.textAlign = 'right';
     ctx2d.fillStyle = 'rgba(92,224,179,.9)';
     ctx2d.fillText('LV' + state.level, W - 12, 26);
+    // 활성 버프 표시 (LV 아래)
+    let by = 42;
+    for (const [k, c, label] of [['double', '#8B7CFF', 'DBL'], ['rapid', '#FFD166', 'RPD'], ['shield', '#5CE0B3', 'SHD']]) {
+      if (state.buffs[k] > 0) {
+        ctx2d.fillStyle = c;
+        ctx2d.fillText(k === 'shield' ? label : `${label} ${state.buffs[k].toFixed(0)}s`, W - 12, by);
+        by += 15;
+      }
+    }
     ctx2d.textAlign = 'left';
   }
 }
