@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 (() => {
   const CELL = 20, COLS = 24, ROWS = 24, W = 480, H = 480;
   const SAVE_KEY = 'snake-log', BEST_KEY = 'snake-best';
@@ -31,7 +31,7 @@
     alive = true; paused = false;
     startedAt = performance.now();
     overlay.hidden = true;
-    MGZ.status('먹이를 먹으세요');
+    MGZ.status('癒뱀씠瑜?癒뱀쑝?몄슂');
     MGZ.beep(440, .06, 'square', .06, 660);
   }
 
@@ -47,7 +47,7 @@
     if (pending.length) dir = pending.shift();
     const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
     if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS || snake.some(s => s.x === head.x && s.y === head.y)) {
-      endGame(head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS ? '벽' : '내 몸');
+      endGame(head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS ? '踰? : '??紐?);
       return;
     }
     snake.unshift(head);
@@ -56,7 +56,7 @@
       stepMs = Math.max(70, 150 - score * 3);
       food = placeFood();
       MGZ.beep(880, .05, 'square', .07, 1320);
-      MGZ.status(`먹이 ${score}개 · 길이 ${snake.length}`);
+      MGZ.status(`癒뱀씠 ${score}媛?쨌 湲몄씠 ${snake.length}`);
     } else {
       snake.pop();
     }
@@ -73,10 +73,10 @@
     stats = stats.slice(0, 50);
     MGZ.save(SAVE_KEY, stats);
     if (score > best) { best = score; MGZ.save(BEST_KEY, best); }
-    overlayTitle.textContent = `${cause}에 부딪힘!`;
-    overlayMsg.textContent = `먹이 ${score}개 · 길이 ${snake.length} · ${secs}초 생존 — 최고 ${best}개`;
+    overlayTitle.textContent = `${cause}??遺?ろ옒!`;
+    overlayMsg.textContent = `癒뱀씠 ${score}媛?쨌 湲몄씠 ${snake.length} 쨌 ${secs}珥??앹〈 ??理쒓퀬 ${best}媛?;
     overlay.hidden = false;
-    MGZ.status('Enter로 다시 출발');
+    MGZ.status('Enter濡??ㅼ떆 異쒕컻');
     renderLog();
   }
 
@@ -111,12 +111,12 @@
     draw();
   }
 
-  function pauseGame() { if (alive && !paused) { paused = true; MGZ.status('일시정지 — P로 재개'); } }
-  function resumeGame() { if (alive && paused) { paused = false; last = performance.now(); MGZ.status('먹이를 먹으세요'); } }
+  function pauseGame() { if (alive && !paused) { paused = true; MGZ.status('?쇱떆?뺤? ??P濡??ш컻'); } }
+  function resumeGame() { if (alive && paused) { paused = false; last = performance.now(); MGZ.status('癒뱀씠瑜?癒뱀쑝?몄슂'); } }
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !alive) return newGame();
-    if (e.key === 'r' || e.key === 'R') { if (!alive) return newGame(); return endGame('재시작'); }
+    if (e.key === 'r' || e.key === 'R') { if (!alive) return newGame(); return endGame('?ъ떆??); }
     if (e.key === 'p' || e.key === 'P') return paused ? resumeGame() : pauseGame();
     const k = e.key;
     if (k === 'ArrowUp' || k === 'w' || k === 'W') { setDir(0, -1); e.preventDefault(); }
@@ -139,8 +139,8 @@
 
   function renderLog() {
     const body = document.getElementById('logBody');
-    document.getElementById('bestLine').textContent = best ? `${best}개` : '—';
-    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
+    document.getElementById('bestLine').textContent = best ? `${best}媛? : '??;
+    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">?꾩쭅 湲곕줉???놁뒿?덈떎</td></tr>'; return; }
     body.innerHTML = stats.slice(0, 10).map((r, i) =>
       `<tr class="rank-${i + 1}"><td>${i + 1}</td><td>${r.score}</td><td>${r.len}</td><td>${r.secs}s</td><td>${r.cause}</td></tr>`).join('');
   }
@@ -150,6 +150,7 @@
   document.getElementById('recordsBtn').addEventListener('click', () => { renderLog(); MGZ.openModal('recordsModal'); });
   document.getElementById('clearLog').addEventListener('click', () => { stats = []; MGZ.save(SAVE_KEY, stats); renderLog(); });
 
+  MGZ.trackPlay('snake');
   MGZ.wireSwitches();
   MGZ.wireModals();
   MGZ.autoPause(pauseGame);

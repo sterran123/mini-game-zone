@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>플래피 — 김민기의 미니게임</title>
+  <meta name="description" content="한 번의 탭으로 날아오르는 새를 파이프 사이로 통과시키는 원버튼 게임.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="플래피 — 김민기의 미니게임">
+  <meta property="og:image" content="https://sterran123.github.io/mini-game-zone/assets/og-cover.png">
+  <meta property="og:url" content="https://sterran123.github.io/mini-game-zone/flap.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="flap.css">
+</head>
+<body>
+  <a class="skip-link" href="#gameCanvas">게임으로 바로 가기</a>
+
+  <header class="topbar">
+    <p class="logo"><a href="index.html" class="logo-back">◂ ZONE</a> 플래피<span class="logo-dot">.</span></p>
+    <div class="switches">
+      <button class="switch" id="soundSwitch" role="switch" aria-checked="true" aria-label="소리">
+        <span class="track"><span class="thumb"></span></span> 소리
+      </button>
+      <button class="switch" id="motionSwitch" role="switch" aria-checked="false" aria-label="움직임 줄이기">
+        <span class="track"><span class="thumb"></span></span> 움직임 줄이기
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="canvas-area" id="canvasArea">
+      <canvas id="gameCanvas" width="480" height="640" role="img" aria-label="플래피 게임 화면 — 탭해서 새를 날게 하고 파이프를 통과합니다"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="overlay-card">
+          <p class="overlay-mascot">🐤</p>
+          <p class="overlay-title" id="overlayTitle">플래피</p>
+          <p class="overlay-msg" id="overlayMsg">탭·스페이스로 날기 — 파이프 사이를 통과하세요.</p>
+          <div class="overlay-btns">
+            <button class="btn-primary" id="startBtn">출발 (Enter)</button>
+            <div class="overlay-btns-sub">
+              <button class="btn-ghost" id="howBtn">게임 방법</button>
+              <button class="btn-ghost" id="recordsBtn">플레이 기록</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
+    <p class="controls-line">스페이스·클릭·터치로 날기 · P 일시정지 · R 재시작</p>
+  </main>
+
+  <div class="modal" id="howModal" hidden role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <div class="modal-card">
+      <h2 id="howTitle">게임 방법</h2>
+      <ul class="how-list">
+        <li>🐤 스페이스·클릭·터치 한 번에 새가 위로 뜁니다. 안 누르면 중력으로 떨어집니다.</li>
+        <li>🌵 파이프 사이를 통과할 때마다 1점 — 파이프·바닥·천장에 닿으면 끝.</li>
+        <li>⚡ 통과할수록 파이프 속도가 조금씩 빨라집니다.</li>
+        <li>🏆 최고 점수에 도전하세요.</li>
+      </ul>
+      <p class="how-controls">조작 — 스페이스·클릭·터치 / P 일시정지 · R 재시작 · Enter 출발</p>
+      <button class="btn-primary" data-close>닫기 (Esc)</button>
+    </div>
+  </div>
+
+  <div class="modal" id="recordsModal" hidden role="dialog" aria-modal="true" aria-labelledby="recordsTitle">
+    <div class="modal-card">
+      <div class="records-head">
+        <h2 id="recordsTitle">순위표</h2>
+        <div class="records-actions">
+          <button class="btn-ghost" id="clearLog">초기화</button>
+        </div>
+      </div>
+      <p class="records-hint">최고 기록: <b id="bestLine">—</b> · 점수 순으로 정렬됩니다</p>
+      <table class="log-table">
+        <thead><tr><th>#</th><th>점수</th><th>날짜</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="3" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
+      </table>
+      <button class="btn-primary" data-close>닫기 (Esc)</button>
+    </div>
+  </div>
+
+  <script src="shared.js" defer></script>
+  <script src="flap.js" defer></script>
+</body>
+</html>

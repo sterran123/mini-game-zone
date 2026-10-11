@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>두더지 잡기 — 김민기의 미니게임</title>
+  <meta name="description" content="30초 안에 두더지를 최대한 많이 잡는 순발력 게임. 황금 두더지는 5점!">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="두더지 잡기 — 김민기의 미니게임">
+  <meta property="og:image" content="https://sterran123.github.io/mini-game-zone/assets/og-cover.png">
+  <meta property="og:url" content="https://sterran123.github.io/mini-game-zone/whack.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="whack.css">
+</head>
+<body>
+  <header class="topbar">
+    <p class="logo"><a href="index.html" class="logo-back">◂ ZONE</a> 두더지 잡기<span class="logo-dot">.</span></p>
+    <div class="switches">
+      <button class="switch" id="soundSwitch" role="switch" aria-checked="true" aria-label="소리">
+        <span class="track"><span class="thumb"></span></span> 소리
+      </button>
+      <button class="switch" id="motionSwitch" role="switch" aria-checked="false" aria-label="움직임 줄이기">
+        <span class="track"><span class="thumb"></span></span> 움직임 줄이기
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="board-area">
+      <div class="whack-board" id="whackBoard" role="group" aria-label="두더지 잡기 판 — 튀어나오는 두더지를 누르세요"></div>
+      <div class="overlay" id="overlay">
+        <div class="overlay-card">
+          <p class="overlay-mascot">🔨</p>
+          <p class="overlay-title" id="overlayTitle">두더지 잡기</p>
+          <p class="overlay-msg" id="overlayMsg">30초 동안 최대한 많이 잡으세요.</p>
+          <div class="overlay-btns">
+            <button class="btn-primary" id="startBtn">출발 (Enter)</button>
+            <div class="overlay-btns-sub">
+              <button class="btn-ghost" id="howBtn">게임 방법</button>
+              <button class="btn-ghost" id="recordsBtn">플레이 기록</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
+    <p class="controls-line">튀어나온 두더지를 클릭·터치 · R 재시작</p>
+    <p class="score-line">점수 <b id="scoreNow">0</b> · 남은 시간 <b id="timeLeft">30.0</b>s</p>
+  </main>
+
+  <div class="modal" id="howModal" hidden role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <div class="modal-card">
+      <h2 id="howTitle">게임 방법</h2>
+      <ul class="how-list">
+        <li>🐹 구멍에서 두더지가 랜덤으로 튀어나옵니다 — 나와 있는 동안 누르면 +1점.</li>
+        <li>⭐ 가끔 황금 두더지가 나옵니다 — 잡으면 +5점!</li>
+        <li>⏱ 제한시간은 30초. 후반부로 갈수록 더 빨리 나옵니다.</li>
+        <li>🏆 최고 점수에 도전하세요.</li>
+      </ul>
+      <p class="how-controls">조작 — 클릭·터치 / R 재시작 · Enter 출발</p>
+      <button class="btn-primary" data-close>닫기 (Esc)</button>
+    </div>
+  </div>
+
+  <div class="modal" id="recordsModal" hidden role="dialog" aria-modal="true" aria-labelledby="recordsTitle">
+    <div class="modal-card">
+      <div class="records-head">
+        <h2 id="recordsTitle">순위표</h2>
+        <div class="records-actions">
+          <button class="btn-ghost" id="clearLog">초기화</button>
+        </div>
+      </div>
+      <p class="records-hint">최고 기록: <b id="bestLine">—</b> · 점수 순으로 정렬됩니다</p>
+      <table class="log-table">
+        <thead><tr><th>#</th><th>점수</th><th>잡은 수</th><th>날짜</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="4" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
+      </table>
+      <button class="btn-primary" data-close>닫기 (Esc)</button>
+    </div>
+  </div>
+
+  <script src="shared.js" defer></script>
+  <script src="whack.js" defer></script>
+</body>
+</html>

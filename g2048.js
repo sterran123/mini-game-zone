@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 (() => {
   const N = 4;
   const SAVE_KEY = 'g2048-log', BEST_KEY = 'g2048-best';
@@ -32,7 +32,7 @@
     spawn(); spawn();
     overlay.hidden = true;
     render();
-    MGZ.status('방향키로 타일을 미세요');
+    MGZ.status('諛⑺뼢?ㅻ줈 ??쇱쓣 誘몄꽭??);
     MGZ.beep(440, .06, 'square', .06, 660);
   }
 
@@ -81,7 +81,7 @@
     render();
     if (!won && grid.flat().some(v => v >= 2048)) {
       won = true;
-      MGZ.status('🎉 2048! 계속 진행할 수 있습니다');
+      MGZ.status('?럦 2048! 怨꾩냽 吏꾪뻾?????덉뒿?덈떎');
       MGZ.beep(660, .1, 'square', .08, 990); MGZ.beep(880, .1, 'square', .08, 1320, .12);
     } else if (!emptyCells().length && !canMove()) {
       endGame();
@@ -105,10 +105,10 @@
     stats.sort((a, b) => b.score - a.score);
     stats = stats.slice(0, 50);
     MGZ.save(SAVE_KEY, stats);
-    overlayTitle.textContent = '게임 오버';
-    overlayMsg.textContent = `점수 ${score} · 최대 타일 ${maxTile} — 최고 ${best}점`;
+    overlayTitle.textContent = '寃뚯엫 ?ㅻ쾭';
+    overlayMsg.textContent = `?먯닔 ${score} 쨌 理쒕? ???${maxTile} ??理쒓퀬 ${best}??;
     overlay.hidden = false;
-    MGZ.status('Enter로 다시 출발');
+    MGZ.status('Enter濡??ㅼ떆 異쒕컻');
     renderLog();
   }
 
@@ -152,8 +152,8 @@
 
   function renderLog() {
     const body = document.getElementById('logBody');
-    document.getElementById('bestLine').textContent = best ? `${best}점` : '—';
-    if (!stats.length) { body.innerHTML = '<tr><td colspan="4" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
+    document.getElementById('bestLine').textContent = best ? `${best}?? : '??;
+    if (!stats.length) { body.innerHTML = '<tr><td colspan="4" class="log-empty">?꾩쭅 湲곕줉???놁뒿?덈떎</td></tr>'; return; }
     body.innerHTML = stats.slice(0, 10).map((r, i) =>
       `<tr class="rank-${i + 1}"><td>${i + 1}</td><td>${r.score}</td><td>${r.maxTile}</td><td>${r.at}</td></tr>`).join('');
   }
@@ -163,6 +163,7 @@
   document.getElementById('recordsBtn').addEventListener('click', () => { renderLog(); MGZ.openModal('recordsModal'); });
   document.getElementById('clearLog').addEventListener('click', () => { stats = []; MGZ.save(SAVE_KEY, stats); renderLog(); });
 
+  MGZ.trackPlay('g2048');
   MGZ.wireSwitches();
   MGZ.wireModals();
   renderLog();

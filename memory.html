@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>메모리 매치 — 김민기의 미니게임</title>
+  <meta name="description" content="뒤집힌 카드에서 같은 그림 짝을 찾는 기억력 게임. 적은 뒤집기와 빠른 시간을 노리세요.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="메모리 매치 — 김민기의 미니게임">
+  <meta property="og:image" content="https://sterran123.github.io/mini-game-zone/assets/og-cover.png">
+  <meta property="og:url" content="https://sterran123.github.io/mini-game-zone/memory.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="memory.css">
+</head>
+<body>
+  <header class="topbar">
+    <p class="logo"><a href="index.html" class="logo-back">◂ ZONE</a> 메모리 매치<span class="logo-dot">.</span></p>
+    <div class="switches">
+      <button class="switch" id="soundSwitch" role="switch" aria-checked="true" aria-label="소리">
+        <span class="track"><span class="thumb"></span></span> 소리
+      </button>
+      <button class="switch" id="motionSwitch" role="switch" aria-checked="false" aria-label="움직임 줄이기">
+        <span class="track"><span class="thumb"></span></span> 움직임 줄이기
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="board-area">
+      <div class="mem-board" id="memBoard" role="grid" aria-label="메모리 매치 카드판 — 같은 그림 짝을 찾습니다"></div>
+      <div class="overlay" id="overlay">
+        <div class="overlay-card">
+          <p class="overlay-mascot">🃏</p>
+          <p class="overlay-title" id="overlayTitle">메모리 매치</p>
+          <p class="overlay-msg" id="overlayMsg">같은 그림 짝 8쌍을 찾으세요.</p>
+          <div class="overlay-btns">
+            <button class="btn-primary" id="startBtn">출발 (Enter)</button>
+            <div class="overlay-btns-sub">
+              <button class="btn-ghost" id="howBtn">게임 방법</button>
+              <button class="btn-ghost" id="recordsBtn">플레이 기록</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
+    <p class="controls-line">카드를 클릭·터치해서 뒤집기 · R 재시작</p>
+    <p class="score-line">뒤집기 <b id="movesNow">0</b>회 · 시간 <b id="timeNow">0.0</b>s</p>
+  </main>
+
+  <div class="modal" id="howModal" hidden role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <div class="modal-card">
+      <h2 id="howTitle">게임 방법</h2>
+      <ul class="how-list">
+        <li>🃏 카드를 눌러 뒤집고, 같은 그림 두 장을 짝지으면 고정됩니다.</li>
+        <li>🔢 두 장 뒤집을 때마다 뒤집기 횟수가 1 오릅니다.</li>
+        <li>🏆 8쌍을 모두 찾으면 끝 — 적은 뒤집기와 빠른 시간이 좋은 기록입니다.</li>
+      </ul>
+      <p class="how-controls">조작 — 클릭·터치 / R 재시작 · Enter 출발</p>
+      <button class="btn-primary" data-close>닫기 (Esc)</button>
+    </div>
+  </div>
+
+  <div class="modal" id="recordsModal" hidden role="dialog" aria-modal="true" aria-labelledby="recordsTitle">
+    <div class="modal-card">
+      <div class="records-head">
+        <h2 id="recordsTitle">순위표</h2>
+        <div class="records-actions">
+          <button class="btn-ghost" id="clearLog">초기화</button>
+        </div>
+      </div>
+      <p class="records-hint">최고 기록: <b id="bestLine">—</b> · 뒤집기 수가 적은 순입니다</p>
+      <table class="log-table">
+        <thead><tr><th>#</th><th>뒤집기</th><th>시간</th><th>날짜</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="4" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
+      </table>
+      <button class="btn-primary" data-close>닫기 (Esc)</button>
+    </div>
+  </div>
+
+  <script src="shared.js" defer></script>
+  <script src="memory.js" defer></script>
+</body>
+</html>

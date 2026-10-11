@@ -55,6 +55,14 @@ window.MGZ = (() => {
     catch { return fallback; }
   }
   function save(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+  function trackPlay(gameId) {
+    const plays = load('mgz-plays', {});
+    const entry = plays[gameId] || { n: 0, last: null };
+    entry.n++;
+    entry.last = new Date().toISOString().slice(0, 10);
+    plays[gameId] = entry;
+    save('mgz-plays', plays);
+  }
   function status(msg) { const el = document.getElementById('statusLine'); if (el) el.textContent = msg; }
   function openModal(id) {
     document.querySelectorAll('.modal').forEach(m => { m.hidden = true; });
@@ -66,5 +74,5 @@ window.MGZ = (() => {
     document.querySelectorAll('.modal [data-close]').forEach(b => b.addEventListener('click', closeModals));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
   }
-  return { beep, wireSwitches, autoPause, load, save, status, openModal, closeModals, wireModals };
+  return { beep, wireSwitches, autoPause, load, save, status, openModal, closeModals, wireModals, trackPlay };
 })();

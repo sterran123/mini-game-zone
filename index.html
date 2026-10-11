@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MINI GAME ZONE — 김민기의 미니게임 모음</title>
-  <meta name="description" content="김민기가 직접 만든 브라우저 미니게임 모음 — 메테오 런(운석 회피 서바이벌 + UFO 보스전), 스네이크, 벽돌깨기, 2048, 반응 테스트, 테트리스.">
+  <meta name="description" content="김민기가 직접 만든 브라우저 미니게임 모음 — 메테오 런, 스네이크, 벽돌깨기, 2048, 반응 테스트, 메모리 매치, 플래피, 두더지, 테트리스.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="MINI GAME ZONE — 김민기의 미니게임 모음">
-  <meta property="og:description" content="김민기가 직접 만든 브라우저 미니게임 모음 — 로켓으로 운석을 피하고, 블록을 쌓아 지워라. 픽셀 아트와 WebAudio 사운드.">
+  <meta property="og:description" content="김민기가 직접 만든 브라우저 미니게임 모음 — 검색·장르 태그로 찾고 바로 플레이. 픽셀 아트와 WebAudio 사운드.">
   <meta property="og:image" content="https://sterran123.github.io/mini-game-zone/assets/og-cover.png">
   <meta property="og:url" content="https://sterran123.github.io/mini-game-zone/">
   <meta name="twitter:card" content="summary_large_image">
@@ -25,10 +25,26 @@
     <p class="zone-sub">직접 만든 브라우저 게임을 모아두는 곳 · 플러그인 없이 바로 플레이</p>
   </header>
 
-  <main class="game-list">
+  <div class="finder">
+    <input id="gameSearch" class="game-search" type="search" placeholder="게임 검색…" autocomplete="off" aria-label="게임 검색">
+    <div class="tag-row" id="tagRow" role="group" aria-label="장르 태그">
+      <button class="tag on" data-tag="all">전체</button>
+      <button class="tag" data-tag="액션">액션</button>
+      <button class="tag" data-tag="아케이드">아케이드</button>
+      <button class="tag" data-tag="퍼즐">퍼즐</button>
+      <button class="tag" data-tag="순발력">순발력</button>
+    </div>
+  </div>
 
-    <a class="game-card featured" href="meteor.html">
-      <span class="game-badge">NEW</span>
+  <section class="pop-strip" aria-label="자주 플레이한 게임">
+    <p class="pop-title" id="popTitle">⭐ 추천 게임</p>
+    <div class="pop-list" id="popList"></div>
+  </section>
+
+  <main class="game-list" id="gameList">
+
+    <a class="game-card featured" href="meteor.html" data-id="meteor" data-name="메테오 런" data-genres="액션 아케이드">
+      <span class="game-badge">HOT</span>
       <div class="game-preview big">
         <img src="assets/sprites/rocket.svg" alt="">
         <img src="assets/sprites/meteor.svg" alt="">
@@ -43,7 +59,7 @@
       <span class="game-play">PLAY ▸</span>
     </a>
 
-    <a class="game-card" href="snake.html">
+    <a class="game-card" href="snake.html" data-id="snake" data-name="스네이크" data-genres="아케이드">
       <span class="game-badge">NEW</span>
       <div class="game-preview solo">
         <img src="assets/sprites/snake.svg" alt="">
@@ -56,7 +72,7 @@
       <span class="game-play">PLAY ▸</span>
     </a>
 
-    <a class="game-card" href="breakout.html">
+    <a class="game-card" href="breakout.html" data-id="breakout" data-name="벽돌깨기" data-genres="아케이드">
       <span class="game-badge">NEW</span>
       <div class="game-preview solo">
         <img src="assets/sprites/bricks.svg" alt="">
@@ -69,7 +85,33 @@
       <span class="game-play">PLAY ▸</span>
     </a>
 
-    <a class="game-card" href="g2048.html">
+    <a class="game-card" href="flap.html" data-id="flap" data-name="플래피" data-genres="아케이드 순발력">
+      <span class="game-badge">NEW</span>
+      <div class="game-preview solo">
+        <img src="assets/sprites/bird.svg" alt="">
+      </div>
+      <div class="game-info">
+        <h2>플래피</h2>
+        <p class="game-desc">한 번의 탭으로 날아오르고 중력에 떨어지는 새를 파이프 사이로 통과시키는 원버튼 게임.</p>
+        <p class="game-meta">원버튼 · 반사신경 · 점수 경쟁</p>
+      </div>
+      <span class="game-play">PLAY ▸</span>
+    </a>
+
+    <a class="game-card" href="whack.html" data-id="whack" data-name="두더지 잡기" data-genres="순발력">
+      <span class="game-badge">NEW</span>
+      <div class="game-preview solo">
+        <img src="assets/sprites/mole.svg" alt="">
+      </div>
+      <div class="game-info">
+        <h2>두더지 잡기</h2>
+        <p class="game-desc">30초 안에 튀어나오는 두더지를 최대한 많이 잡으세요. 가끔 나오는 황금 두더지는 5점!</p>
+        <p class="game-meta">순발력 · 제한시간 · 점수 경쟁</p>
+      </div>
+      <span class="game-play">PLAY ▸</span>
+    </a>
+
+    <a class="game-card" href="g2048.html" data-id="g2048" data-name="2048" data-genres="퍼즐">
       <span class="game-badge">NEW</span>
       <div class="game-preview solo">
         <img src="assets/sprites/g2048.svg" alt="">
@@ -82,7 +124,20 @@
       <span class="game-play">PLAY ▸</span>
     </a>
 
-    <a class="game-card" href="reaction.html">
+    <a class="game-card" href="memory.html" data-id="memory" data-name="메모리 매치" data-genres="퍼즐">
+      <span class="game-badge">NEW</span>
+      <div class="game-preview solo">
+        <img src="assets/sprites/cards.svg" alt="">
+      </div>
+      <div class="game-info">
+        <h2>메모리 매치</h2>
+        <p class="game-desc">뒤집힌 카드 속 같은 그림 짝을 찾는 기억력 게임. 적은 뒤집기와 빠른 시간으로 기록을 세우세요.</p>
+        <p class="game-meta">퍼즐 · 기억력 · 최소 수 경쟁</p>
+      </div>
+      <span class="game-play">PLAY ▸</span>
+    </a>
+
+    <a class="game-card" href="reaction.html" data-id="reaction" data-name="반응 테스트" data-genres="순발력">
       <span class="game-badge">NEW</span>
       <div class="game-preview solo">
         <img src="assets/sprites/bolt.svg" alt="">
@@ -95,7 +150,7 @@
       <span class="game-play">PLAY ▸</span>
     </a>
 
-    <a class="game-card" href="https://dynamic-tetris-game.web.app/" target="_blank" rel="noopener">
+    <a class="game-card" href="https://dynamic-tetris-game.web.app/" target="_blank" rel="noopener" data-id="tetris" data-name="테트리스" data-genres="퍼즐" data-external="1">
       <span class="game-badge alt">LINK</span>
       <div class="game-preview solo">
         <img src="assets/sprites/tetris.svg" alt="">
@@ -119,7 +174,9 @@
     </div>
 
   </main>
+  <p class="no-result" id="noResult" hidden>일치하는 게임이 없습니다.</p>
 
   <footer class="zone-foot">김민기가 만듦 · 소스는 <a href="https://github.com/sterran123/mini-game-zone">GitHub</a>에서</footer>
+  <script src="zone.js" defer></script>
 </body>
 </html>
