@@ -56,12 +56,14 @@ window.MGZ = (() => {
   }
   function save(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
   function trackPlay(gameId) {
-    const plays = load('mgz-plays', {});
-    const entry = plays[gameId] || { n: 0, last: null };
-    entry.n++;
-    entry.last = new Date().toISOString().slice(0, 10);
-    plays[gameId] = entry;
-    save('mgz-plays', plays);
+    try {
+      const plays = load('mgz-plays', {});
+      const entry = plays[gameId] || { n: 0, last: null };
+      entry.n++;
+      entry.last = new Date().toISOString().slice(0, 10);
+      plays[gameId] = entry;
+      save('mgz-plays', plays);
+    } catch { /* 저장 불가 환경은 무시 */ }
   }
   function status(msg) { const el = document.getElementById('statusLine'); if (el) el.textContent = msg; }
   function openModal(id) {

@@ -58,6 +58,7 @@ a.game-card:hover {
   border-color: var(--violet);
   box-shadow: 0 0 30px rgba(139,124,255,.25), 0 10px 26px rgba(0,0,0,.4);
 }
+.game-card[hidden] { display: none; }
 .game-badge {
   position: absolute; top: -9px; left: 18px;
   font-family: 'Press Start 2P', monospace; font-size: .5rem;

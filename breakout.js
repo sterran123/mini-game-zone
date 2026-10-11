@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 (() => {
   const W = 480, H = 640;
   const SAVE_KEY = 'breakout-log', BEST_KEY = 'breakout-best';
@@ -45,14 +45,14 @@
     resetServe();
     alive = true; paused = false;
     overlay.hidden = true;
-    MGZ.status('?대┃?섎㈃ 怨듭씠 異쒕컻?⑸땲??);
+    MGZ.status('클릭하면 공이 출발합니다');
   }
 
   function nextLevel() {
     level++;
     bricks = buildBricks(level);
     resetServe();
-    MGZ.status(`LV${level} ???대┃?섎㈃ 怨듭씠 異쒕컻?⑸땲??);
+    MGZ.status(`LV${level} — 클릭하면 공이 출발합니다`);
     MGZ.beep(660, .08, 'square', .07, 990);
   }
 
@@ -66,10 +66,10 @@
     stats = stats.slice(0, 50);
     MGZ.save(SAVE_KEY, stats);
     if (score > best) { best = score; MGZ.save(BEST_KEY, best); }
-    overlayTitle.textContent = '寃뚯엫 ?ㅻ쾭';
-    overlayMsg.textContent = `?먯닔 ${score} 쨌 LV${level} ?꾨떖 ??理쒓퀬 ${best}??;
+    overlayTitle.textContent = '게임 오버';
+    overlayMsg.textContent = `점수 ${score} · LV${level} 도달 — 최고 ${best}점`;
     overlay.hidden = false;
-    MGZ.status('Enter濡??ㅼ떆 異쒕컻');
+    MGZ.status('Enter로 다시 출발');
     renderLog();
   }
 
@@ -94,7 +94,7 @@
         const overlapY = Math.min(ball.y + ball.r - b.y, b.y + b.h - (ball.y - ball.r));
         if (overlapX < overlapY) ball.vx = -ball.vx; else ball.vy = -ball.vy;
         MGZ.beep(500 + b.pts * 4, .04, 'square', .06);
-        MGZ.status(`?먯닔 ${score} 쨌 紐⑹닲 ${lives} 쨌 LV${level}`);
+        MGZ.status(`점수 ${score} · 목숨 ${lives} · LV${level}`);
         break;
       }
     }
@@ -103,7 +103,7 @@
       lives--;
       if (lives <= 0) return endGame();
       resetServe();
-      MGZ.status(`紐⑹닲 ${lives}媛????대┃?섎㈃ 怨듭씠 異쒕컻?⑸땲??);
+      MGZ.status(`목숨 ${lives}개 — 클릭하면 공이 출발합니다`);
       MGZ.beep(240, .18, 'sawtooth', .08, 120);
     }
   }
@@ -125,7 +125,7 @@
     ctx.fillStyle = 'rgba(244,239,250,.85)';
     ctx.font = '600 14px Pretendard, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(`?먯닔 ${score}   LV${level}   ?Γ?{lives}`, 16, 30);
+    ctx.fillText(`점수 ${score}   LV${level}   ♥×${lives}`, 16, 30);
     ctx.textAlign = 'right';
     ctx.fillText(`BEST ${best}`, W - 16, 30);
     if (paused && alive) {
@@ -158,7 +158,7 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !alive) return newGame();
     if ((e.key === 'r' || e.key === 'R') && alive) return endGame();
-    if (e.key === 'p' || e.key === 'P') return paused ? (paused = false, MGZ.status(`?먯닔 ${score}`)) : (paused = true, MGZ.status('?쇱떆?뺤? ??P濡??ш컻'));
+    if (e.key === 'p' || e.key === 'P') return paused ? (paused = false, MGZ.status(`점수 ${score}`)) : (paused = true, MGZ.status('일시정지 — P로 재개'));
     if (!alive) return;
     if (e.key === ' ') { launch(); e.preventDefault(); return; }
     const step = 34;
@@ -168,8 +168,8 @@
 
   function renderLog() {
     const body = document.getElementById('logBody');
-    document.getElementById('bestLine').textContent = best ? `${best}?? : '??;
-    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">?꾩쭅 湲곕줉???놁뒿?덈떎</td></tr>'; return; }
+    document.getElementById('bestLine').textContent = best ? `${best}점` : '—';
+    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
     body.innerHTML = stats.slice(0, 10).map((r, i) =>
       `<tr class="rank-${i + 1}"><td>${i + 1}</td><td>${r.score}</td><td>${r.level}</td><td>${r.lives}</td><td>${r.at}</td></tr>`).join('');
   }
@@ -182,7 +182,7 @@
   MGZ.trackPlay('breakout');
   MGZ.wireSwitches();
   MGZ.wireModals();
-  MGZ.autoPause(() => { if (alive && !paused) { paused = true; MGZ.status('?쇱떆?뺤? ??P濡??ш컻'); } });
+  MGZ.autoPause(() => { if (alive && !paused) { paused = true; MGZ.status('일시정지 — P로 재개'); } });
   score = 0; lives = 3; level = 1; alive = false; paused = false;
   bricks = buildBricks(level);
   resetServe();

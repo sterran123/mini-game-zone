@@ -44,13 +44,7 @@ let stats = loadStats();
 function saveStats() { localStorage.setItem(SAVE_KEY, JSON.stringify(stats)); }
 
 // 존 허브용 플레이 카운트 (이 브라우저 기준)
-try {
-  const plays = JSON.parse(localStorage.getItem('mgz-plays') || '{}');
-  const entry = plays.meteor || { n: 0, last: null };
-  entry.n++; entry.last = new Date().toISOString().slice(0, 10);
-  plays.meteor = entry;
-  localStorage.setItem('mgz-plays', JSON.stringify(plays));
-} catch {}
+try { MGZ.trackPlay('meteor'); } catch {}
 
 // ----- 소리 (WebAudio — 파일 없이 생성) -----
 let audioEnabled = localStorage.getItem('meteor-sound') !== '0';

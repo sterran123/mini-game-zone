@@ -60,20 +60,21 @@
     savePlays();
   });
 
+  function chipHtml(c) {
+    const ext = c.external ? ' target="_blank" rel="noopener"' : '';
+    const n = plays[c.id]?.n > 0 ? `<span class="pop-n">${plays[c.id].n}회</span>` : '';
+    return `<a class="pop-chip" href="${c.el.getAttribute('href')}"${ext}>${c.name}${n}</a>`;
+  }
+
   function renderPopular() {
     const played = cards.filter(c => plays[c.id]?.n > 0).sort((a, b) => plays[b.id].n - plays[a.id].n).slice(0, 4);
     if (played.length) {
       popTitle.textContent = '🔥 자주 플레이한 게임';
-      popList.innerHTML = played.map(c =>
-        `<a class="pop-chip" href="${c.el.getAttribute('href')}">${c.name}<span class="pop-n">${plays[c.id].n}회</span></a>`
-      ).join('');
+      popList.innerHTML = played.map(chipHtml).join('');
     } else {
       popTitle.textContent = '⭐ 추천 게임';
-      popList.innerHTML = cards.filter(c => !c.external).slice(0, 3).map(c =>
-        `<a class="pop-chip" href="${c.el.getAttribute('href')}">${c.name}</a>`
-      ).join('');
+      popList.innerHTML = cards.filter(c => c.el.getAttribute('href')).slice(0, 3).map(chipHtml).join('');
     }
-    popList.querySelectorAll('a[target]').forEach(a => { a.target = '_blank'; a.rel = 'noopener'; });
     popList.addEventListener('click', e => {
       const chip = e.target.closest('.pop-chip');
       if (!chip) return;
