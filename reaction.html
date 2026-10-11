@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>반응 테스트 — 김민기의 미니게임</title>
+  <meta name="description" content="초록으로 바뀌는 순간 클릭! 5회 평균 반응속도를 재는 미니게임.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="반응 테스트 — 김민기의 미니게임">
+  <meta property="og:description" content="초록이 되면 클릭 — 밀리초 단위 반응속도 측정, 5회 평균 기록 경쟁.">
+  <meta property="og:image" content="https://sterran123.github.io/mini-game-zone/assets/og-cover.png">
+  <meta property="og:url" content="https://sterran123.github.io/mini-game-zone/reaction.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="reaction.css">
+</head>
+<body>
+  <header class="topbar">
+    <p class="logo"><a href="index.html" class="logo-back">◂ ZONE</a> 반응 테스트<span class="logo-dot">.</span></p>
+    <div class="switches">
+      <button class="switch" id="soundSwitch" role="switch" aria-checked="true" aria-label="소리">
+        <span class="track"><span class="thumb"></span></span> 소리
+      </button>
+      <button class="switch" id="motionSwitch" role="switch" aria-checked="false" aria-label="움직임 줄이기">
+        <span class="track"><span class="thumb"></span></span> 움직임 줄이기
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="pad-area">
+      <div class="pad" id="pad" role="button" tabindex="0" aria-live="polite">
+        <p class="pad-main" id="padMain">⚡</p>
+        <p class="pad-text" id="padText">클릭해서 시작</p>
+        <p class="pad-sub" id="padSub">5회 측정 후 평균이 기록됩니다</p>
+      </div>
+    </div>
+    <p class="status-line" id="statusLine" aria-live="polite">패드를 클릭하면 시작</p>
+    <p class="controls-line">초록으로 바뀌면 최대한 빨리 클릭 · 스페이스·터치도 됩니다 · R 재시작</p>
+    <p class="pad-actions"><button class="btn-ghost" id="recordsBtn">플레이 기록</button></p>
+  </main>
+
+  <div class="modal" id="recordsModal" hidden role="dialog" aria-modal="true" aria-labelledby="recordsTitle">
+    <div class="modal-card">
+      <div class="records-head">
+        <h2 id="recordsTitle">순위표</h2>
+        <div class="records-actions">
+          <button class="btn-ghost" id="clearLog">초기화</button>
+        </div>
+      </div>
+      <p class="records-hint">최고 평균: <b id="bestLine">—</b> · 빠른 순으로 정렬됩니다</p>
+      <table class="log-table">
+        <thead><tr><th>#</th><th>평균</th><th>최고 단발</th><th>날짜</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="4" class="log-empty">아직 기록이 없습니다</td></tr></tbody>
+      </table>
+      <button class="btn-primary" data-close>닫기 (Esc)</button>
+    </div>
+  </div>
+
+  <script src="shared.js" defer></script>
+  <script src="reaction.js" defer></script>
+</body>
+</html>
