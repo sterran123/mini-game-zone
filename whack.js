@@ -20,6 +20,7 @@
     b.setAttribute('aria-label', `구멍 ${i + 1}`);
     b.innerHTML = '<span class="mole"></span>';
     b.addEventListener('pointerdown', () => whack(i));
+    b.addEventListener('click', () => whack(i));
     boardEl.appendChild(b);
     return b;
   });
@@ -83,7 +84,8 @@
     clearTimeout(spawnTimer); clearTimeout(hideTimer); clearInterval(tickTimer);
     if (current >= 0) { holes[current].classList.remove('up'); holes[current].dataset.gold = ''; current = -1; }
     MGZ.beep(300, .2, 'square', .07, 150); MGZ.beep(660, .12, 'square', .08, 990, .15);
-    stats.push({ score, hits, at: new Date().toISOString().slice(0, 10) });
+    const rec = { score, hits, at: new Date().toISOString().slice(0, 10), name: '' };
+    stats.push(rec);
     stats.sort((a, b) => b.score - a.score);
     stats = stats.slice(0, 50);
     MGZ.save(SAVE_KEY, stats);
@@ -93,6 +95,7 @@
     overlay.hidden = false;
     MGZ.status('Enter로 다시 출발');
     renderLog();
+    MGZ.offerName(document.querySelector('#overlay .overlay-card'), stats, rec, persist);
   }
 
   document.addEventListener('keydown', e => {
@@ -100,12 +103,14 @@
     if (e.key === 'r' || e.key === 'R') return alive ? endGame() : newGame();
   });
 
+  const persist = () => { MGZ.save(SAVE_KEY, stats); renderLog(); };
+
   function renderLog() {
     const body = document.getElementById('logBody');
     document.getElementById('bestLine').textContent = best ? `${best}점` : '—';
-    if (!stats.length) { body.innerHTML = '<tr><td colspan="4" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
+    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
     body.innerHTML = stats.slice(0, 10).map((r, i) =>
-      `<tr class="rank-${i + 1}"><td>${i + 1}</td><td>${r.score}</td><td>${r.hits}</td><td>${r.at}</td></tr>`).join('');
+      `<tr class="rank-${i + 1}"><td>${MGZ.medal(i)}</td><td>${MGZ.esc(r.name) || '—'}</td><td>${r.score}</td><td>${r.hits}</td><td>${r.at}</td></tr>`).join('');
   }
 
   document.getElementById('startBtn').addEventListener('click', newGame);

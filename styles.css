@@ -143,6 +143,26 @@ body {
 }
 .log-table td { padding: 7px 8px; border-bottom: 1px solid rgba(255,255,255,.05); }
 .log-table .win { color: var(--mint); font-weight: 700; }
+.log-table .rank-1 td:first-child { color: #FFD166; font-weight: 800; }
+.log-table .rank-2 td:first-child { color: #C9C3DD; font-weight: 800; }
+.log-table .rank-3 td:first-child { color: #D2936B; font-weight: 800; }
+
+/* ----- 순위 등록 (이름 입력) — 게임 공통 ----- */
+.name-entry {
+  margin-bottom: 16px;
+  background: rgba(139,124,255,.12);
+  border: 1px solid rgba(139,124,255,.35);
+  border-radius: 12px; padding: 12px 14px;
+}
+.name-hint { font-size: .8rem; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+.name-row { display: flex; gap: 8px; }
+.name-row input {
+  flex: 1; min-width: 0;
+  font: inherit; font-weight: 700; font-size: .9rem;
+  background: #17141F; color: var(--ink);
+  border: 1px solid rgba(255,255,255,.15); border-radius: 9px;
+  padding: 8px 12px; text-align: center;
+}
 .log-empty { text-align: center; color: var(--ink-2); padding: 18px 0; }
 
 /* ----- 공통 키프레임 ----- */

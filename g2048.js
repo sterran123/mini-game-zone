@@ -101,7 +101,8 @@
     alive = false;
     MGZ.beep(200, .3, 'sawtooth', .09, 60);
     const maxTile = Math.max(...grid.flat());
-    stats.push({ score, maxTile, at: new Date().toISOString().slice(0, 10) });
+    const rec = { score, maxTile, at: new Date().toISOString().slice(0, 10), name: '' };
+    stats.push(rec);
     stats.sort((a, b) => b.score - a.score);
     stats = stats.slice(0, 50);
     MGZ.save(SAVE_KEY, stats);
@@ -110,6 +111,7 @@
     overlay.hidden = false;
     MGZ.status('Enter로 다시 출발');
     renderLog();
+    MGZ.offerName(document.querySelector('#overlay .overlay-card'), stats, rec, persist);
   }
 
   function render() {
@@ -150,12 +152,14 @@
     ts = null;
   });
 
+  const persist = () => { MGZ.save(SAVE_KEY, stats); renderLog(); };
+
   function renderLog() {
     const body = document.getElementById('logBody');
     document.getElementById('bestLine').textContent = best ? `${best}점` : '—';
-    if (!stats.length) { body.innerHTML = '<tr><td colspan="4" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
+    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
     body.innerHTML = stats.slice(0, 10).map((r, i) =>
-      `<tr class="rank-${i + 1}"><td>${i + 1}</td><td>${r.score}</td><td>${r.maxTile}</td><td>${r.at}</td></tr>`).join('');
+      `<tr class="rank-${i + 1}"><td>${MGZ.medal(i)}</td><td>${MGZ.esc(r.name) || '—'}</td><td>${r.score}</td><td>${r.maxTile}</td><td>${r.at}</td></tr>`).join('');
   }
 
   document.getElementById('startBtn').addEventListener('click', newGame);

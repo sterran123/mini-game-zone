@@ -61,13 +61,15 @@
         const min = Math.min(...results);
         phase = 'summary';
         setPad('result', '🏁', `평균 ${avg}ms`, `5회: ${results.join(' · ')}ms`);
-        stats.push({ avg, min, at: new Date().toISOString().slice(0, 10) });
+        const rec = { avg, min, at: new Date().toISOString().slice(0, 10), name: '' };
+        stats.push(rec);
         stats.sort((a, b) => a.avg - b.avg);
         stats = stats.slice(0, 50);
         MGZ.save(SAVE_KEY, stats);
         if (best === null || avg < best) { best = avg; MGZ.save(BEST_KEY, best); }
         MGZ.status(`평균 ${avg}ms — 최고 ${best}ms · 클릭하면 다시`);
         renderLog();
+        MGZ.offerName(document.querySelector('.pad-area'), stats, rec, persist);
         MGZ.beep(660, .1, 'square', .08, 990); MGZ.beep(880, .12, 'square', .08, 1320, .12);
       } else {
         phase = 'result';
@@ -80,16 +82,21 @@
 
   pad.addEventListener('click', press);
   document.addEventListener('keydown', e => {
-    if (e.key === ' ' || e.key === 'Enter') { press(); e.preventDefault(); }
+    if (e.key === ' ' || e.key === 'Enter') {
+      if (e.target.closest('button') || document.querySelector('.modal:not([hidden])')) return;
+      press(); e.preventDefault();
+    }
     if (e.key === 'r' || e.key === 'R') { clearTimeout(waitTimer); results = []; phase = 'idle'; setPad('idle', '⚡', '클릭해서 시작', '5회 측정 후 평균이 기록됩니다'); MGZ.status('패드를 클릭하면 시작'); }
   });
+
+  const persist = () => { MGZ.save(SAVE_KEY, stats); renderLog(); };
 
   function renderLog() {
     const body = document.getElementById('logBody');
     document.getElementById('bestLine').textContent = best !== null ? `${best}ms` : '—';
-    if (!stats.length) { body.innerHTML = '<tr><td colspan="4" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
+    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
     body.innerHTML = stats.slice(0, 10).map((r, i) =>
-      `<tr class="rank-${i + 1}"><td>${i + 1}</td><td>${r.avg}ms</td><td>${r.min}ms</td><td>${r.at}</td></tr>`).join('');
+      `<tr class="rank-${i + 1}"><td>${MGZ.medal(i)}</td><td>${MGZ.esc(r.name) || '—'}</td><td>${r.avg}ms</td><td>${r.min}ms</td><td>${r.at}</td></tr>`).join('');
   }
 
   document.getElementById('clearLog').addEventListener('click', () => { stats = []; MGZ.save(SAVE_KEY, stats); renderLog(); });

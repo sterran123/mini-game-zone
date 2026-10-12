@@ -66,6 +66,39 @@ window.MGZ = (() => {
     } catch { /* 저장 불가 환경은 무시 */ }
   }
   function status(msg) { const el = document.getElementById('statusLine'); if (el) el.textContent = msg; }
+  // ----- 순위표 공통: 메달·이스케이프·닉네임 입력 -----
+  const MEDALS = ['🥇', '🥈', '🥉'];
+  function medal(i) { return MEDALS[i] ?? i + 1; }
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g,
+      c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  // 기록이 상위 10위 안이면 닉네임 입력 행을 host에 붙인다.
+  // stats는 이미 좋은 순으로 정렬된 배열, rec는 방금 넣은 기록 객체.
+  // onSaved()에서 게임이 localStorage 저장 + 표 다시 그리기를 한다.
+  function offerName(host, stats, rec, onSaved) {
+    host.querySelector('.name-entry')?.remove();
+    const rank = stats.indexOf(rec);
+    if (rank < 0 || rank >= 10) return;
+    const box = document.createElement('div');
+    box.className = 'name-entry';
+    box.innerHTML =
+      `<p class="name-hint">${rank + 1}위 진입! 이름을 남기세요</p>` +
+      '<div class="name-row">' +
+      `<input class="name-input" maxlength="8" placeholder="이름" autocomplete="off" value="${esc(localStorage.getItem('mgz-name') || '')}">` +
+      '<button class="btn-ghost" type="button">등록</button></div>';
+    const input = box.querySelector('input');
+    const save = () => {
+      rec.name = input.value.trim().slice(0, 8) || '익명';
+      try { localStorage.setItem('mgz-name', rec.name); } catch { /* 저장 불가 환경은 무시 */ }
+      box.remove();
+      onSaved();
+      status(`${rec.name} — ${rank + 1}위에 기록됨`);
+    };
+    box.querySelector('button').addEventListener('click', save);
+    input.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') save(); });
+    host.insertBefore(box, host.querySelector('.overlay-btns'));
+  }
   function openModal(id) {
     document.querySelectorAll('.modal').forEach(m => { m.hidden = true; });
     const m = document.getElementById(id);
@@ -76,5 +109,5 @@ window.MGZ = (() => {
     document.querySelectorAll('.modal [data-close]').forEach(b => b.addEventListener('click', closeModals));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
   }
-  return { beep, wireSwitches, autoPause, load, save, status, openModal, closeModals, wireModals, trackPlay };
+  return { beep, wireSwitches, autoPause, load, save, status, openModal, closeModals, wireModals, trackPlay, medal, esc, offerName };
 })();

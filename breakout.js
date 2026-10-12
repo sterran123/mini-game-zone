@@ -61,7 +61,8 @@
     canvasArea.classList.add('shake');
     setTimeout(() => canvasArea.classList.remove('shake'), 350);
     MGZ.beep(180, .3, 'sawtooth', .09, 50);
-    stats.push({ score, level, lives, at: new Date().toISOString().slice(0, 10) });
+    const rec = { score, level, lives, at: new Date().toISOString().slice(0, 10), name: '' };
+    stats.push(rec);
     stats.sort((a, b) => b.score - a.score);
     stats = stats.slice(0, 50);
     MGZ.save(SAVE_KEY, stats);
@@ -71,6 +72,7 @@
     overlay.hidden = false;
     MGZ.status('Enter로 다시 출발');
     renderLog();
+    MGZ.offerName(document.querySelector('#overlay .overlay-card'), stats, rec, persist);
   }
 
   function update(dt) {
@@ -166,12 +168,14 @@
     if (e.key === 'ArrowRight') { paddle.x = Math.min(W - paddle.w, paddle.x + step); e.preventDefault(); }
   });
 
+  const persist = () => { MGZ.save(SAVE_KEY, stats); renderLog(); };
+
   function renderLog() {
     const body = document.getElementById('logBody');
     document.getElementById('bestLine').textContent = best ? `${best}점` : '—';
-    if (!stats.length) { body.innerHTML = '<tr><td colspan="5" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
+    if (!stats.length) { body.innerHTML = '<tr><td colspan="6" class="log-empty">아직 기록이 없습니다</td></tr>'; return; }
     body.innerHTML = stats.slice(0, 10).map((r, i) =>
-      `<tr class="rank-${i + 1}"><td>${i + 1}</td><td>${r.score}</td><td>${r.level}</td><td>${r.lives}</td><td>${r.at}</td></tr>`).join('');
+      `<tr class="rank-${i + 1}"><td>${MGZ.medal(i)}</td><td>${MGZ.esc(r.name) || '—'}</td><td>${r.score}</td><td>${r.level}</td><td>${r.lives}</td><td>${r.at}</td></tr>`).join('');
   }
 
   document.getElementById('startBtn').addEventListener('click', newGame);

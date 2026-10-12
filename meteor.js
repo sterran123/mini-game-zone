@@ -524,7 +524,7 @@ function endGame(cause = '운석') {
   const rank = [...stats.plays].sort((a, b) => b.ms - a.ms).indexOf(rec);
   if (rank >= 0 && rank < 10) {
     nameEntry.hidden = false;
-    nameInput.value = localStorage.getItem('meteor-name') || '';
+    nameInput.value = localStorage.getItem('mgz-name') || '';
   } else nameEntry.hidden = true;
   document.querySelector('.overlay-mascot').textContent = '💥';
   overlayTitle.textContent = isBest ? '신기록!' : '추락…';
@@ -607,7 +607,7 @@ function renderLog() {
   const rows = [...stats.plays].sort((a, b) => b.ms - a.ms).slice(0, 10);
   logBody.innerHTML = rows.length
     ? rows.map((p, i) => `<tr class="${i < 3 ? 'rank-' + (i + 1) : ''}"><td>${MEDALS[i] ?? i + 1}</td>` +
-        `<td>${p.name || '—'}</td>` +
+        `<td>${MGZ.esc(p.name) || '—'}</td>` +
         `<td class="${p.ms >= stats.best && stats.best ? 'win' : ''}">${(p.ms / 1000).toFixed(1)}s</td>` +
         `<td>${p.stars}</td><td>${p.level}</td><td>${p.cause ?? '운석'}</td></tr>`).join('')
     : '<tr><td colspan="6" class="log-empty">아직 기록이 없습니다</td></tr>';
@@ -619,7 +619,7 @@ function saveName() {
   const last = stats.plays[stats.plays.length - 1];
   if (!last) return;
   last.name = nameInput.value.trim().slice(0, 8) || '익명';
-  localStorage.setItem('meteor-name', last.name);
+  localStorage.setItem('mgz-name', last.name);
   saveStats(); renderLog();
   nameEntry.hidden = true;
   setStatus(`${last.name} — ${(last.ms / 1000).toFixed(1)}초 기록됨`);
