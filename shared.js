@@ -99,6 +99,21 @@ window.MGZ = (() => {
     input.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') save(); });
     host.insertBefore(box, host.querySelector('.overlay-btns'));
   }
+  // 모바일용 일시정지 버튼 — 키보드(P)가 없는 환경에서도 누를 수 있게 화면에 둔다.
+  // pause/resume/isPaused/isActive는 게임이 넘기고, 250ms마다 상태를 맞춰 표시를 동기화한다.
+  function wirePause({ pause, resume, isPaused, isActive }) {
+    const btn = document.getElementById('pauseBtn');
+    if (!btn) return;
+    const sync = () => {
+      const playing = isActive(), stopped = isPaused();
+      btn.hidden = !playing && !stopped;
+      btn.textContent = stopped ? '▶ 재개' : '⏸ 일시정지';
+      btn.setAttribute('aria-pressed', String(stopped));
+    };
+    btn.addEventListener('click', () => { (isPaused() ? resume : pause)(); sync(); });
+    setInterval(sync, 250);
+    sync();
+  }
   function openModal(id) {
     document.querySelectorAll('.modal').forEach(m => { m.hidden = true; });
     const m = document.getElementById(id);
@@ -109,5 +124,5 @@ window.MGZ = (() => {
     document.querySelectorAll('.modal [data-close]').forEach(b => b.addEventListener('click', closeModals));
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
   }
-  return { beep, wireSwitches, autoPause, load, save, status, openModal, closeModals, wireModals, trackPlay, medal, esc, offerName };
+  return { beep, wireSwitches, autoPause, load, save, status, openModal, closeModals, wireModals, trackPlay, medal, esc, offerName, wirePause };
 })();

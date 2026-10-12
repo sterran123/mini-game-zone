@@ -34,6 +34,7 @@
   <main class="stage">
     <div class="canvas-area" id="canvasArea">
       <canvas id="gameCanvas" width="480" height="640" role="img" aria-label="플래피 게임 화면 — 탭해서 새를 날게 하고 파이프를 통과합니다"></canvas>
+      <button class="pause-btn" id="pauseBtn" type="button" hidden aria-pressed="false">⏸ 일시정지</button>
       <div class="overlay" id="overlay">
         <div class="overlay-card">
           <p class="overlay-mascot">🐤</p>
@@ -50,7 +51,7 @@
       </div>
     </div>
     <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
-    <p class="controls-line">스페이스·클릭·터치로 날기 · P 일시정지 · R 재시작</p>
+    <p class="controls-line">스페이스·클릭·터치로 날기 · ⏸ 버튼·P 일시정지 · R 재시작</p>
   </main>
 
   <div class="modal" id="howModal" hidden role="dialog" aria-modal="true" aria-labelledby="howTitle">

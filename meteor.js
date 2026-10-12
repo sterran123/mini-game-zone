@@ -667,4 +667,6 @@ applyMotion(localStorage.getItem('meteor-motion') !== null
   ? localStorage.getItem('meteor-motion') === '1'
   : matchMedia('(prefers-reduced-motion: reduce)').matches);
 applySound();
+MGZ.wirePause({ pause: pauseGame, resume: resumeGame,
+  isPaused: () => state.phase === 'paused', isActive: () => state.phase === 'playing' });
 hud(); renderLog(); draw();

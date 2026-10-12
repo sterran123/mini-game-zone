@@ -35,6 +35,7 @@
   <main class="stage">
     <div class="canvas-area" id="canvasArea">
       <canvas id="gameCanvas" width="480" height="640" role="img" aria-label="메테오 런 게임 화면 — 로켓을 좌우로 움직여 운석을 피합니다"></canvas>
+      <button class="pause-btn" id="pauseBtn" type="button" hidden aria-pressed="false">⏸ 일시정지</button>
       <div class="overlay" id="overlay">
         <div class="overlay-card">
           <p class="overlay-mascot">🚀</p>
@@ -58,7 +59,7 @@
       </div>
     </div>
     <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
-    <p class="controls-line">방향키·A D 이동 · 마우스 호버·터치 드래그도 됩니다 · P 일시정지 · R 재시작</p>
+    <p class="controls-line">방향키·A D 이동 · 마우스 호버·터치 드래그도 됩니다 · ⏸ 버튼·P 일시정지 · R 재시작</p>
   </main>
 
   <!-- 게임 방법 팝업 -->

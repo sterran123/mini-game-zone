@@ -32,6 +32,7 @@
   <main class="stage">
     <div class="board-area">
       <div class="whack-board" id="whackBoard" role="group" aria-label="두더지 잡기 판 — 튀어나오는 두더지를 누르세요"></div>
+      <button class="pause-btn" id="pauseBtn" type="button" hidden aria-pressed="false">⏸ 일시정지</button>
       <div class="overlay" id="overlay">
         <div class="overlay-card">
           <p class="overlay-mascot">🔨</p>
@@ -48,7 +49,7 @@
       </div>
     </div>
     <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
-    <p class="controls-line">튀어나온 두더지를 클릭·터치 · R 재시작</p>
+    <p class="controls-line">튀어나온 두더지를 클릭·터치 · ⏸ 버튼·P 일시정지 · R 재시작</p>
     <p class="score-line">점수 <b id="scoreNow">0</b> · 남은 시간 <b id="timeLeft">30.0</b>s</p>
   </main>
 

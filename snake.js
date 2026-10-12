@@ -158,6 +158,7 @@
   MGZ.wireSwitches();
   MGZ.wireModals();
   MGZ.autoPause(pauseGame);
+  MGZ.wirePause({ pause: pauseGame, resume: resumeGame, isPaused: () => paused, isActive: () => alive });
   renderLog();
   requestAnimationFrame(loop);
 })();

@@ -7,7 +7,7 @@
   const padText = document.getElementById('padText');
   const padSub = document.getElementById('padSub');
 
-  let phase = 'idle', results = [], waitTimer = null, goAt = 0;
+  let phase = 'idle', results = [], waitTimer = null, goAt = 0, paused = false;
   let stats = MGZ.load(SAVE_KEY, []);
   let best = MGZ.load(BEST_KEY, null);
 
@@ -36,7 +36,23 @@
     }, 1200 + Math.random() * 2400);
   }
 
+  function pauseGame() {
+    if (paused || phase !== 'wait') return;
+    paused = true;
+    clearTimeout(waitTimer);
+    setPad('wait', '⏸️', '일시정지', '버튼을 누르면 이어서 대기합니다');
+    MGZ.status('일시정지 중');
+  }
+
+  function resumeGame() {
+    if (!paused) return;
+    paused = false;
+    nextRound();   // 대기 단계를 처음부터 다시 잡는다 — 시간은 속이지 않음
+    MGZ.status('재개 — 초록으로 바뀌면 클릭!');
+  }
+
   function press() {
+    if (paused) return;
     if (phase === 'idle' || phase === 'summary') { startRun(); return; }
     if (phase === 'result') { nextRound(); return; }
     if (phase === 'wait') {
@@ -86,7 +102,8 @@
       if (e.target.closest('button') || document.querySelector('.modal:not([hidden])')) return;
       press(); e.preventDefault();
     }
-    if (e.key === 'r' || e.key === 'R') { clearTimeout(waitTimer); results = []; phase = 'idle'; setPad('idle', '⚡', '클릭해서 시작', '5회 측정 후 평균이 기록됩니다'); MGZ.status('패드를 클릭하면 시작'); }
+    if (e.key === 'r' || e.key === 'R') { clearTimeout(waitTimer); results = []; paused = false; phase = 'idle'; setPad('idle', '⚡', '클릭해서 시작', '5회 측정 후 평균이 기록됩니다'); MGZ.status('패드를 클릭하면 시작'); }
+    if (e.key === 'p' || e.key === 'P') return paused ? resumeGame() : pauseGame();
   });
 
   const persist = () => { MGZ.save(SAVE_KEY, stats); renderLog(); };
@@ -105,5 +122,7 @@
   MGZ.trackPlay('reaction');
   MGZ.wireSwitches();
   MGZ.wireModals();
+  MGZ.autoPause(pauseGame);
+  MGZ.wirePause({ pause: pauseGame, resume: resumeGame, isPaused: () => paused, isActive: () => phase === 'wait' });
   renderLog();
 })();

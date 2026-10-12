@@ -4,6 +4,7 @@
   padding: 18px 16px 40px;
 }
 .pad-area {
+  position: relative;
   width: min(460px, 92vw, calc(100vh - 210px));
 }
 .pad {

@@ -146,6 +146,9 @@
     draw();
   }
 
+  function pauseGame() { if (alive && !paused) { paused = true; MGZ.status('일시정지 — P로 재개'); } }
+  function resumeGame() { if (alive && paused) { paused = false; last = performance.now(); MGZ.status(`점수 ${score}`); } }
+
   function movePaddle(clientX) {
     const rect = canvas.getBoundingClientRect();
     const x = (clientX - rect.left) / rect.width * W;
@@ -160,7 +163,7 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !alive) return newGame();
     if ((e.key === 'r' || e.key === 'R') && alive) return endGame();
-    if (e.key === 'p' || e.key === 'P') return paused ? (paused = false, MGZ.status(`점수 ${score}`)) : (paused = true, MGZ.status('일시정지 — P로 재개'));
+    if (e.key === 'p' || e.key === 'P') return paused ? resumeGame() : pauseGame();
     if (!alive) return;
     if (e.key === ' ') { launch(); e.preventDefault(); return; }
     const step = 34;
@@ -186,7 +189,8 @@
   MGZ.trackPlay('breakout');
   MGZ.wireSwitches();
   MGZ.wireModals();
-  MGZ.autoPause(() => { if (alive && !paused) { paused = true; MGZ.status('일시정지 — P로 재개'); } });
+  MGZ.autoPause(pauseGame);
+  MGZ.wirePause({ pause: pauseGame, resume: resumeGame, isPaused: () => paused, isActive: () => alive });
   score = 0; lives = 3; level = 1; alive = false; paused = false;
   bricks = buildBricks(level);
   resetServe();

@@ -10,13 +10,14 @@
   const timeNow = document.getElementById('timeNow');
 
   let deck, open, matched, moves, lockTimer, startedAt, timerId, alive;
+  let paused = false, pausedAt = 0;
   let stats = MGZ.load(SAVE_KEY, []);
   let best = MGZ.load(BEST_KEY, null);
 
   function newGame() {
     deck = [...ICONS, ...ICONS].sort(() => Math.random() - .5);
     open = []; matched = 0; moves = 0; lockTimer = null;
-    alive = true; startedAt = null;
+    alive = true; startedAt = null; paused = false;
     boardEl.innerHTML = '';
     deck.forEach((icon, i) => {
       const b = document.createElement('button');
@@ -41,7 +42,7 @@
   function tick() { updateHud(((performance.now() - startedAt) / 1000).toFixed(1)); }
 
   function flip(card) {
-    if (!alive || lockTimer || card.classList.contains('up') || card.classList.contains('done')) return;
+    if (!alive || paused || lockTimer || card.classList.contains('up') || card.classList.contains('done')) return;
     if (!startedAt) { startedAt = performance.now(); timerId = setInterval(tick, 100); }
     card.classList.add('up');
     card.textContent = card.dataset.icon;
@@ -67,6 +68,29 @@
     }
   }
 
+  function pauseGame() {
+    if (!alive || paused) return;
+    paused = true; pausedAt = performance.now();
+    clearInterval(timerId);
+    // 일시정지 중 몰래 보기 방지 — 뒤집혀 있던 카드는 다시 내린다
+    open.forEach(c => { if (!c.classList.contains('done')) { c.classList.remove('up'); c.textContent = ''; } });
+    open = [];
+    overlayTitle.textContent = '일시정지';
+    overlayMsg.textContent = '시간이 멈췄습니다 — 카드는 다시 덮어두었어요';
+    document.getElementById('startBtn').textContent = '계속하기';
+    overlay.hidden = false;
+    MGZ.status('일시정지 중');
+  }
+
+  function resumeGame() {
+    if (!paused) return;
+    paused = false;
+    if (startedAt) { startedAt += performance.now() - pausedAt; timerId = setInterval(tick, 100); }
+    document.getElementById('startBtn').textContent = '출발 (Enter)';
+    overlay.hidden = true;
+    MGZ.status('재개 — 카드를 뒤집어 짝을 찾으세요');
+  }
+
   function endGame() {
     alive = false;
     clearInterval(timerId);
@@ -89,6 +113,7 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !alive) return newGame();
     if (e.key === 'r' || e.key === 'R') return newGame();
+    if (e.key === 'p' || e.key === 'P') return paused ? resumeGame() : pauseGame();
   });
 
   const persist = () => { MGZ.save(SAVE_KEY, stats); renderLog(); };
@@ -101,7 +126,7 @@
       `<tr class="rank-${i + 1}"><td>${MGZ.medal(i)}</td><td>${MGZ.esc(r.name) || '—'}</td><td>${r.moves}</td><td>${r.secs}s</td><td>${r.at}</td></tr>`).join('');
   }
 
-  document.getElementById('startBtn').addEventListener('click', newGame);
+  document.getElementById('startBtn').addEventListener('click', () => paused ? resumeGame() : newGame());
   document.getElementById('howBtn').addEventListener('click', () => MGZ.openModal('howModal'));
   document.getElementById('recordsBtn').addEventListener('click', () => { renderLog(); MGZ.openModal('recordsModal'); });
   document.getElementById('clearLog').addEventListener('click', () => { stats = []; MGZ.save(SAVE_KEY, stats); renderLog(); });
@@ -109,6 +134,7 @@
   MGZ.trackPlay('memory');
   MGZ.wireSwitches();
   MGZ.wireModals();
-  MGZ.autoPause(() => { /* 타이머는 elapsed 실측이라 일시정지 불필요 */ });
+  MGZ.autoPause(pauseGame);
+  MGZ.wirePause({ pause: pauseGame, resume: resumeGame, isPaused: () => paused, isActive: () => alive });
   renderLog();
 })();

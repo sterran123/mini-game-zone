@@ -10,6 +10,7 @@
   const timeLeft = document.getElementById('timeLeft');
 
   let holes, score, hits, alive, endAt, spawnTimer, hideTimer, tickTimer, current, runId = 0;
+  let paused = false, pausedLeft = 0;
   let stats = MGZ.load(SAVE_KEY, []);
   let best = MGZ.load(BEST_KEY, 0);
 
@@ -47,7 +48,7 @@
   }
 
   function whack(i) {
-    if (!alive || i !== current || !holes[i].classList.contains('up')) return;
+    if (!alive || paused || i !== current || !holes[i].classList.contains('up')) return;
     const gold = holes[i].dataset.gold === '1';
     const pts = gold ? 5 : 1;
     score += pts; hits++;
@@ -60,14 +61,38 @@
   }
 
   function tick() {
+    if (paused) return;
     const left = Math.max(0, (endAt - performance.now()) / 1000);
     timeLeft.textContent = left.toFixed(1);
     if (left <= 0) endGame();
   }
 
+  function pauseGame() {
+    if (!alive || paused) return;
+    paused = true;
+    pausedLeft = Math.max(0, endAt - performance.now());
+    clearTimeout(spawnTimer); clearTimeout(hideTimer); clearInterval(tickTimer);
+    if (current >= 0) { holes[current].classList.remove('up'); holes[current].dataset.gold = ''; current = -1; }
+    overlayTitle.textContent = '일시정지';
+    overlayMsg.textContent = `남은 ${(pausedLeft / 1000).toFixed(1)}초 — 시간이 멈췄습니다`;
+    document.getElementById('startBtn').textContent = '계속하기';
+    overlay.hidden = false;
+    MGZ.status('일시정지 중');
+  }
+
+  function resumeGame() {
+    if (!paused) return;
+    paused = false;
+    endAt = performance.now() + pausedLeft;
+    overlay.hidden = true;
+    tickTimer = setInterval(tick, 90);
+    pop();
+    MGZ.status('재개 — 두더지를 잡으세요!');
+  }
+
   function newGame() {
     runId++;
-    score = 0; hits = 0; current = -1; alive = true;
+    score = 0; hits = 0; current = -1; alive = true; paused = false;
     endAt = performance.now() + ROUND_S * 1000;
     scoreNow.textContent = '0'; timeLeft.textContent = ROUND_S.toFixed(1);
     clearInterval(tickTimer); tickTimer = setInterval(tick, 90);
@@ -92,6 +117,7 @@
     if (score > best) { best = score; MGZ.save(BEST_KEY, best); }
     overlayTitle.textContent = '시간 끝!';
     overlayMsg.textContent = `점수 ${score} · ${hits}마리 잡음 — 최고 ${best}점`;
+    document.getElementById('startBtn').textContent = '다시 출발';
     overlay.hidden = false;
     MGZ.status('Enter로 다시 출발');
     renderLog();
@@ -100,7 +126,8 @@
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !alive) return newGame();
-    if (e.key === 'r' || e.key === 'R') return alive ? endGame() : newGame();
+    if (e.key === 'r' || e.key === 'R') return alive && !paused ? endGame() : newGame();
+    if (e.key === 'p' || e.key === 'P') return paused ? resumeGame() : pauseGame();
   });
 
   const persist = () => { MGZ.save(SAVE_KEY, stats); renderLog(); };
@@ -113,7 +140,7 @@
       `<tr class="rank-${i + 1}"><td>${MGZ.medal(i)}</td><td>${MGZ.esc(r.name) || '—'}</td><td>${r.score}</td><td>${r.hits}</td><td>${r.at}</td></tr>`).join('');
   }
 
-  document.getElementById('startBtn').addEventListener('click', newGame);
+  document.getElementById('startBtn').addEventListener('click', () => paused ? resumeGame() : newGame());
   document.getElementById('howBtn').addEventListener('click', () => MGZ.openModal('howModal'));
   document.getElementById('recordsBtn').addEventListener('click', () => { renderLog(); MGZ.openModal('recordsModal'); });
   document.getElementById('clearLog').addEventListener('click', () => { stats = []; MGZ.save(SAVE_KEY, stats); renderLog(); });
@@ -121,5 +148,7 @@
   MGZ.trackPlay('whack');
   MGZ.wireSwitches();
   MGZ.wireModals();
+  MGZ.autoPause(pauseGame);
+  MGZ.wirePause({ pause: pauseGame, resume: resumeGame, isPaused: () => paused, isActive: () => alive });
   renderLog();
 })();

@@ -32,6 +32,7 @@
   <main class="stage">
     <div class="board-area">
       <div class="mem-board" id="memBoard" role="grid" aria-label="메모리 매치 카드판 — 같은 그림 짝을 찾습니다"></div>
+      <button class="pause-btn" id="pauseBtn" type="button" hidden aria-pressed="false">⏸ 일시정지</button>
       <div class="overlay" id="overlay">
         <div class="overlay-card">
           <p class="overlay-mascot">🃏</p>
@@ -48,7 +49,7 @@
       </div>
     </div>
     <p class="status-line" id="statusLine" aria-live="polite">Enter를 누르면 출발</p>
-    <p class="controls-line">카드를 클릭·터치해서 뒤집기 · R 재시작</p>
+    <p class="controls-line">카드를 클릭·터치해서 뒤집기 · ⏸ 버튼·P 일시정지 · R 재시작</p>
     <p class="score-line">뒤집기 <b id="movesNow">0</b>회 · 시간 <b id="timeNow">0.0</b>s</p>
   </main>
 

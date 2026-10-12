@@ -143,6 +143,7 @@
   MGZ.wireSwitches();
   MGZ.wireModals();
   MGZ.autoPause(pauseGame);
+  MGZ.wirePause({ pause: pauseGame, resume: resumeGame, isPaused: () => paused, isActive: () => alive });
   bird = { y: H / 2, vy: 0 }; pipes = []; score = 0; alive = false; paused = false;
   renderLog();
   requestAnimationFrame(loop);

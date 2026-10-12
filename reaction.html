@@ -32,6 +32,7 @@
 
   <main class="stage">
     <div class="pad-area">
+      <button class="pause-btn" id="pauseBtn" type="button" hidden aria-pressed="false">⏸ 일시정지</button>
       <div class="pad" id="pad" role="button" tabindex="0" aria-live="polite">
         <p class="pad-main" id="padMain">⚡</p>
         <p class="pad-text" id="padText">클릭해서 시작</p>
@@ -39,7 +40,7 @@
       </div>
     </div>
     <p class="status-line" id="statusLine" aria-live="polite">패드를 클릭하면 시작</p>
-    <p class="controls-line">초록으로 바뀌면 최대한 빨리 클릭 · 스페이스·터치도 됩니다 · R 재시작</p>
+    <p class="controls-line">초록으로 바뀌면 최대한 빨리 클릭 · 스페이스·터치도 됩니다 · 대기 중 ⏸ 버튼·P 일시정지 · R 재시작</p>
     <p class="pad-actions"><button class="btn-ghost" id="recordsBtn">플레이 기록</button></p>
   </main>
 
